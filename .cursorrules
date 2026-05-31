@@ -1,0 +1,68 @@
+# .cursorrules — Hotel Booking System
+
+## STACK
+- Backend: Python 3.11+ với FastAPI
+- Database: MariaDB 10.6+ với SQLAlchemy ORM
+- Frontend: Jinja2 Templates + TailwindCSS
+- Dependency Injection: FastAPI Depends()
+
+## LAYERED ARCHITECTURE — BẮT BUỘC TUÂN THỦ
+
+Mỗi feature PHẢI đi qua đúng 4 tầng sau, KHÔNG được bỏ qua:
+Router (Controller) → Service → Repository → Model (Entity)
+- **Router** (`/routers/*.py`): Chỉ nhận Request, gọi Service, trả Response. KHÔNG chứa logic nghiệp vụ.
+- **Service** (`/services/*.py`): Chứa toàn bộ business logic. KHÔNG query DB trực tiếp.
+- **Repository** (`/repositories/*.py`): Chỉ tương tác với DB qua SQLAlchemy. KHÔNG chứa logic nghiệp vụ.
+- **Model** (`/models/*.py`): SQLAlchemy ORM models. KHÔNG chứa business logic.
+- **Schema** (`/schemas/*.py`): Pydantic models cho Request/Response. Tách biệt hoàn toàn với ORM models.
+
+## ANTI-OVERBOOKING — ƯU TIÊN SỐ 1
+
+Mọi thao tác tạo Booking PHẢI sử dụng SELECT ... FOR UPDATE trong transaction:
+
+```python
+# ĐÚNG: Dùng transaction lock
+async with db.begin():
+    room = await db.execute(
+        select(Room).where(Room.id == room_id).with_for_update()
+    )
+    # Kiểm tra conflict trước khi INSERT
+
+# SAI: Không lock → race condition → overbooking
+room = await db.get(Room, room_id)
+```
+
+## NAMING CONVENTIONS
+- Files: `snake_case.py`
+- Classes: `PascalCase`
+- Functions/variables: `snake_case`
+- Constants: `UPPER_SNAKE_CASE`
+- DB columns: `snake_case`
+- API endpoints: `/kebab-case` (nếu nhiều từ)
+
+## ERROR HANDLING
+- Dùng custom exception classes trong `/exceptions/`
+- Router bắt exception và trả HTTPException với status code đúng
+- Service raise domain exceptions, KHÔNG raise HTTPException
+- Log đầy đủ ở Service layer với structured logging
+
+## DEPENDENCY INJECTION
+```python
+# ĐÚNG
+async def get_bookings(
+    booking_service: BookingService = Depends(get_booking_service),
+    current_user: User = Depends(get_current_user)
+):
+    ...
+```
+
+## DATABASE TRANSACTIONS
+- Mỗi use case phức tạp (tạo booking + cập nhật room status) PHẢI trong 1 transaction
+- Dùng `async with db.begin()` hoặc `@transaction` decorator
+- Rollback tự động khi có exception
+
+## CODE QUALITY
+- Mỗi function tối đa 30 dòng. Nếu dài hơn → tách function
+- Type hints BẮT BUỘC cho mọi function signature
+- Docstring BẮT BUỘC cho mọi Service method
+- Không hardcode: config vào `.env` + Pydantic Settings
