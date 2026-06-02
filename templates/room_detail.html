@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Residences — Room Detail</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            charcoal: '#313131',
+            cream: '#F3EEE7',
+            'mid-gray': '#82847F',
+            'light-border': '#DBDBDB',
+            'dark-gray': '#55565B',
+            accent: '#007DFA',
+            gold: '#ACCEF0',
+          },
+          fontFamily: {
+            display: ['"Lyon Display Web"', 'Georgia', 'serif'],
+            serif: ['"Lyon Text Web"', 'Georgia', 'serif'],
+            sans: ['WhitneySSm', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+          },
+          transitionTimingFunction: {
+            aman: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          },
+          maxWidth: {
+            content: '1440px',
+          },
+          fontSize: {
+            h2: ['31px', { lineHeight: '45px' }],
+            h3: ['20px', { lineHeight: '28px' }],
+            'form-label': ['10px', { lineHeight: '14px' }],
+          },
+          spacing: {
+            13: '52px',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      --ease-aman: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --charcoal: #313131;
+      --cream: #f3eee7;
+    }
+
+    * { border-radius: 0 !important; }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 800ms var(--ease-aman), transform 800ms var(--ease-aman);
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, #dbdbdb 0%, #f3eee7 50%, #dbdbdb 100%);
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.2s ease-in-out infinite;
+    }
+
+    @keyframes skeleton-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .btn-primary {
+      transition: background-color 250ms var(--ease-aman),
+        color 250ms var(--ease-aman),
+        transform 150ms var(--ease-aman);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: #000;
+      color: #fff;
+    }
+
+    .btn-primary:active:not(:disabled) {
+      transform: scale(0.98);
+      background-color: #55565b;
+    }
+
+    .input-focus-line:focus {
+      outline: none;
+      border-bottom: 1px solid var(--charcoal);
+    }
+
+    .input-error {
+      border-bottom: 1px solid var(--charcoal) !important;
+    }
+
+    .field-valid::after {
+      content: '✓';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      color: var(--charcoal);
+      opacity: 0;
+      transition: opacity 250ms var(--ease-aman);
+    }
+
+    .field-valid.is-valid::after {
+      opacity: 1;
+    }
+
+    .form-select,
+    .form-input {
+      transition: border-color 250ms var(--ease-aman),
+        color 250ms var(--ease-aman);
+    }
+
+    .inline-alert {
+      border: 1px solid #000;
+      transition: opacity 400ms var(--ease-aman), transform 400ms var(--ease-aman);
+    }
+
+    .gallery-thumb {
+      transition: opacity 250ms var(--ease-aman), border-color 250ms var(--ease-aman);
+    }
+
+    .gallery-thumb.is-active {
+      opacity: 1;
+      border-bottom: 2px solid var(--charcoal);
+    }
+
+    .gallery-thumb:not(.is-active) {
+      opacity: 0.55;
+    }
+
+    .lightbox {
+      transition: opacity 400ms var(--ease-aman);
+    }
+
+    .lightbox.is-open { opacity: 1; pointer-events: auto; }
+    .lightbox.is-closed { opacity: 0; pointer-events: none; }
+
+    @media (min-width: 1024px) {
+      .order-summary-sticky {
+        position: sticky;
+        top: 96px;
+      }
+    }
+  </style>
+</head>
+<body class="bg-white text-charcoal font-sans antialiased" id="page-root">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-30 bg-white border-b border-light-border">
+    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10">
+      <div class="flex items-center justify-between py-4 md:py-5">
+        <a href="/" class="font-display text-sm md:text-base text-charcoal nav-link no-underline hover:underline">Residences</a>
+        <a
+          id="back-to-rooms"
+          href="/rooms"
+          class="font-sans text-sm text-charcoal underline decoration-charcoal underline-offset-4 hover:text-black transition-colors duration-[250ms] ease-aman min-h-[44px] inline-flex items-center"
+        >
+          Back to residences
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Progress -->
+  <div class="border-b border-light-border bg-cream/40">
+    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10 py-4">
+      <p class="font-serif text-form-label text-mid-gray tracking-wide">Step 2 of 3</p>
+      <p class="font-sans text-sm text-charcoal mt-1">Guest details &amp; reservation</p>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="state-loading" class="mx-auto max-w-content px-4 md:px-6 lg:px-10 py-10 lg:py-13" aria-live="polite" aria-busy="true">
+    <div class="lg:grid lg:grid-cols-12 lg:gap-12">
+      <div class="lg:col-span-7 space-y-8">
+        <div class="skeleton w-full aspect-[4/3] md:aspect-[16/10]"></div>
+        <div class="flex gap-2">
+          <div class="skeleton h-16 w-24"></div>
+          <div class="skeleton h-16 w-24"></div>
+          <div class="skeleton h-16 w-24"></div>
+        </div>
+        <div class="skeleton h-10 w-2/3 max-w-md"></div>
+        <div class="skeleton h-4 w-full max-w-xl"></div>
+        <div class="skeleton h-4 w-5/6 max-w-lg"></div>
+      </div>
+      <div class="hidden lg:block lg:col-span-5">
+        <div class="skeleton h-80 w-full bg-cream"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div id="state-error" class="hidden mx-auto max-w-content px-4 md:px-6 lg:px-10 py-13 md:py-20" role="alert">
+    <p class="font-serif text-h3 text-charcoal mb-3">Unable to load residence</p>
+    <p id="load-error-message" class="font-sans text-sm text-charcoal mb-8 max-w-[600px] leading-5"></p>
+    <button
+      type="button"
+      id="retry-load-btn"
+      class="btn-primary inline-flex items-center justify-center min-h-[44px] h-[42px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm mr-4"
+    >
+      Try again
+    </button>
+    <a href="/rooms" class="font-sans text-sm text-charcoal underline decoration-charcoal underline-offset-4 min-h-[44px] inline-flex items-center">
+      Back to residences
+    </a>
+  </div>
+
+  <!-- Main content -->
+  <div id="state-content" class="hidden">
+    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10 py-8 md:py-10 lg:py-13">
+      <div class="lg:grid lg:grid-cols-12 lg:gap-x-12 lg:gap-y-0 items-start">
+
+        <!-- LEFT: Gallery, details, form -->
+        <div class="lg:col-span-7 space-y-10 md:space-y-12">
+
+          <!-- Gallery -->
+          <section aria-label="Room gallery" class="reveal">
+            <button
+              type="button"
+              id="gallery-main-trigger"
+              class="block w-full text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-charcoal"
+              aria-label="Open image gallery"
+            >
+              <div class="overflow-hidden aspect-[4/3] md:aspect-[16/10] w-full">
+                <img
+                  id="gallery-main-image"
+                  src=""
+                  alt=""
+                  class="w-full h-full object-cover transition-transform duration-[800ms] ease-aman"
+                  width="1600"
+                  height="1000"
+                />
+              </div>
+            </button>
+            <div id="gallery-thumbs" class="flex gap-0 mt-0 overflow-x-auto border-t border-light-border" role="tablist" aria-label="Gallery thumbnails"></div>
+          </section>
+
+          <!-- Room details -->
+          <section class="reveal" aria-labelledby="room-title">
+            <p class="font-serif text-form-label text-mid-gray uppercase tracking-widest mb-3" id="room-type-label"></p>
+            <h1 id="room-title" class="font-serif text-h2 text-charcoal mb-6"></h1>
+            <p id="room-description" class="font-sans text-sm md:text-base text-charcoal leading-5 md:leading-6 max-w-[65ch]"></p>
+            <ul id="room-specs" class="mt-8 space-y-2 font-sans text-sm text-charcoal border-t border-light-border pt-6"></ul>
+          </section>
+
+          <!-- Mobile order summary (duplicate for small screens) -->
+          <section class="lg:hidden reveal" aria-label="Order summary">
+            <div id="order-summary-mobile" class="bg-cream p-6 md:p-8 border border-light-border"></div>
+          </section>
+
+          <!-- Booking form -->
+          <section class="reveal" aria-labelledby="booking-form-title">
+            <h2 id="booking-form-title" class="font-serif text-h3 text-charcoal mb-8 pb-4 border-b border-light-border">
+              Complete your reservation
+            </h2>
+
+            <div
+              id="booking-alert"
+              class="hidden inline-alert bg-white text-charcoal px-4 py-4 mb-8 font-sans text-sm leading-5"
+              role="alert"
+            ></div>
+
+            <form id="booking-form" class="space-y-8" novalidate>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div class="relative field-valid">
+                  <label for="form_check_in" class="font-serif text-form-label text-charcoal block pb-2">Check-in</label>
+                  <input
+                    type="date"
+                    id="form_check_in"
+                    name="check_in"
+                    required
+                    class="form-input input-focus-line w-full bg-white text-black font-sans text-base px-[7px] py-2 min-h-[44px] border-0 border-b border-light-border"
+                  />
+                  <p id="err_check_in" class="hidden mt-2 font-sans text-form-label text-charcoal" role="alert"></p>
+                </div>
+                <div class="relative field-valid">
+                  <label for="form_check_out" class="font-serif text-form-label text-charcoal block pb-2">Check-out</label>
+                  <input
+                    type="date"
+                    id="form_check_out"
+                    name="check_out"
+                    required
+                    class="form-input input-focus-line w-full bg-white text-black font-sans text-base px-[7px] py-2 min-h-[44px] border-0 border-b border-light-border"
+                  />
+                  <p id="err_check_out" class="hidden mt-2 font-sans text-form-label text-charcoal" role="alert"></p>
+                </div>
+              </div>
+
+              <div class="relative field-valid max-w-md">
+                <label for="payment_method" class="font-serif text-form-label text-charcoal block pb-2">Payment method</label>
+                <select
+                  id="payment_method"
+                  name="payment_method"
+                  required
+                  class="form-select input-focus-line w-full bg-white text-black font-sans text-base px-[7px] py-2 min-h-[44px] border-0 border-b border-light-border appearance-none cursor-pointer"
+                >
+                  <option value="" disabled selected>Select method</option>
+                  <option value="MOMO">MoMo</option>
+                  <option value="ZALOPAY">ZaloPay</option>
+                  <option value="BANKING">Bank transfer</option>
+                </select>
+                <p id="err_payment_method" class="hidden mt-2 font-sans text-form-label text-charcoal" role="alert"></p>
+              </div>
+
+              <input type="hidden" id="form_room_id" name="room_id" />
+              <input type="hidden" id="form_user_id" name="user_id" value="{{ mock_user_id | default(1) }}" />
+
+              <div class="pt-4">
+                <button
+                  type="submit"
+                  id="submit-booking"
+                  class="btn-primary w-full sm:w-auto inline-flex items-center justify-center min-h-[44px] h-[42px] px-8 border border-charcoal bg-charcoal text-cream font-sans text-sm disabled:bg-light-border disabled:text-mid-gray disabled:border-light-border disabled:cursor-not-allowed"
+                >
+                  <span id="submit-label">Confirm reservation</span>
+                  <span id="submit-loading" class="hidden items-center gap-3 ml-2">
+                    <span class="inline-block w-4 h-4 skeleton" aria-hidden="true"></span>
+                    Processing…
+                  </span>
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <!-- RIGHT: Sticky order summary (desktop) -->
+        <aside class="hidden lg:block lg:col-span-5 mt-0" aria-label="Order summary">
+          <div id="order-summary-desktop" class="order-summary-sticky bg-cream p-8 lg:p-10 border-0 shadow-none"></div>
+        </aside>
+
+      </div>
+    </div>
+  </div>
+
+  <footer class="border-t border-light-border py-10">
+    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10 flex flex-col md:flex-row justify-between gap-4">
+      <p class="font-display text-sm text-charcoal">Residences</p>
+      <p class="font-sans text-form-label text-mid-gray">&copy; {{ current_year | default(2026) }} All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Lightbox -->
+  <div
+    id="lightbox"
+    class="fixed inset-0 z-[60] lightbox is-closed flex items-center justify-center bg-black/90 p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Gallery"
+    aria-hidden="true"
+  >
+    <button type="button" id="lightbox-close" class="absolute top-4 right-4 min-h-[44px] min-w-[44px] text-cream text-3xl" aria-label="Close">&times;</button>
+    <img id="lightbox-img" src="" alt="" class="max-w-full max-h-[90vh] object-contain" />
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const API_BASE = "{{ api_base_url | default('') }}";
+      const MOCK_USER_ID = {{ mock_user_id | default(1) }};
+      const BOOKING_CONFIRM_PATH = "{{ booking_confirm_path | default('/booking-confirm') }}";
+      const ROOMS_LIST_PATH = "{{ rooms_list_path | default('/rooms') }}";
+      const STORAGE_KEY = 'hotel_booking_confirmation';
+
+      {% if room_id is defined and room_id %}
+      const SERVER_ROOM_ID = {{ room_id }};
+      {% else %}
+      const SERVER_ROOM_ID = null;
+      {% endif %}
+
+      const MS_DAY = 86400000;
+      const PLACEHOLDER_IMAGES = [
+        'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1600&q=80',
+        'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1600&q=80',
+        'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1600&q=80',
+      ];
+
+      const state = {
+        room: null,
+        search: { check_in: '', check_out: '', guests: '' },
+        galleryImages: [],
+        activeImageIndex: 0,
+      };
+
+      const els = {
+        stateLoading: document.getElementById('state-loading'),
+        stateError: document.getElementById('state-error'),
+        stateContent: document.getElementById('state-content'),
+        loadErrorMessage: document.getElementById('load-error-message'),
+        retryLoadBtn: document.getElementById('retry-load-btn'),
+        backToRooms: document.getElementById('back-to-rooms'),
+        galleryMainImage: document.getElementById('gallery-main-image'),
+        galleryMainTrigger: document.getElementById('gallery-main-trigger'),
+        galleryThumbs: document.getElementById('gallery-thumbs'),
+        roomTypeLabel: document.getElementById('room-type-label'),
+        roomTitle: document.getElementById('room-title'),
+        roomDescription: document.getElementById('room-description'),
+        roomSpecs: document.getElementById('room-specs'),
+        orderSummaryMobile: document.getElementById('order-summary-mobile'),
+        orderSummaryDesktop: document.getElementById('order-summary-desktop'),
+        form: document.getElementById('booking-form'),
+        formCheckIn: document.getElementById('form_check_in'),
+        formCheckOut: document.getElementById('form_check_out'),
+        formRoomId: document.getElementById('form_room_id'),
+        formUserId: document.getElementById('form_user_id'),
+        paymentMethod: document.getElementById('payment_method'),
+        bookingAlert: document.getElementById('booking-alert'),
+        submitBtn: document.getElementById('submit-booking'),
+        submitLabel: document.getElementById('submit-label'),
+        submitLoading: document.getElementById('submit-loading'),
+        lightbox: document.getElementById('lightbox'),
+        lightboxImg: document.getElementById('lightbox-img'),
+        lightboxClose: document.getElementById('lightbox-close'),
+      };
+
+      function resolveRoomId() {
+        if (SERVER_ROOM_ID) return String(SERVER_ROOM_ID);
+        const parts = window.location.pathname.split('/').filter(Boolean);
+        const roomsIdx = parts.indexOf('rooms');
+        if (roomsIdx >= 0 && parts[roomsIdx + 1]) {
+          const id = parts[roomsIdx + 1];
+          if (/^\d+$/.test(id)) return id;
+        }
+        const q = new URLSearchParams(window.location.search).get('room_id');
+        return q || '';
+      }
+
+      function parseSearchQuery() {
+        const q = new URLSearchParams(window.location.search);
+        return {
+          check_in: q.get('check_in') || '',
+          check_out: q.get('check_out') || '',
+          guests: q.get('guests') || '',
+        };
+      }
+
+      function parseISO(str) {
+        const [y, m, d] = str.split('-').map(Number);
+        return new Date(y, m - 1, d);
+      }
+
+      function formatISO(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+
+      function todayISO() {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        return formatISO(d);
+      }
+
+      function formatDisplayDate(iso) {
+        if (!iso) return '—';
+        return parseISO(iso).toLocaleDateString(undefined, {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        });
+      }
+
+      function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', {
+          style: 'currency',
+          currency: 'VND',
+          maximumFractionDigits: 0,
+        }).format(amount || 0);
+      }
+
+      function formatRoomType(type) {
+        if (!type) return 'Residence';
+        return type.charAt(0) + type.slice(1).toLowerCase().replace(/_/g, ' ');
+      }
+
+      function calcNights(checkIn, checkOut) {
+        if (!checkIn || !checkOut) return 0;
+        const nights = Math.round((parseISO(checkOut) - parseISO(checkIn)) / MS_DAY);
+        return nights > 0 ? nights : 0;
+      }
+
+      function calcTotalPrice(nights) {
+        if (!state.room?.price_per_night || nights <= 0) return 0;
+        return state.room.price_per_night * nights;
+      }
+
+      function showPageState(pageState) {
+        els.stateLoading.classList.toggle('hidden', pageState !== 'loading');
+        els.stateError.classList.toggle('hidden', pageState !== 'error');
+        els.stateContent.classList.toggle('hidden', pageState !== 'content');
+        if (pageState === 'loading') {
+          els.stateLoading.setAttribute('aria-busy', 'true');
+        } else {
+          els.stateLoading.removeAttribute('aria-busy');
+        }
+      }
+
+      function hideBookingAlert() {
+        els.bookingAlert.classList.add('hidden');
+        els.bookingAlert.textContent = '';
+      }
+
+      function showBookingAlert(message) {
+        els.bookingAlert.textContent = message;
+        els.bookingAlert.classList.remove('hidden');
+        els.bookingAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      function setFieldError(fieldId, message) {
+        const errMap = {
+          check_in: 'err_check_in',
+          check_out: 'err_check_out',
+          payment_method: 'err_payment_method',
+        };
+        const inputMap = {
+          check_in: els.formCheckIn,
+          check_out: els.formCheckOut,
+          payment_method: els.paymentMethod,
+        };
+        const errEl = document.getElementById(errMap[fieldId]);
+        const input = inputMap[fieldId];
+        if (errEl) {
+          errEl.textContent = message || '';
+          errEl.classList.toggle('hidden', !message);
+        }
+        if (input) input.classList.toggle('input-error', Boolean(message));
+        const wrap = input?.closest('.field-valid');
+        if (wrap) wrap.classList.toggle('is-valid', Boolean(!message && input?.value));
+      }
+
+      function clearFormErrors() {
+        ['check_in', 'check_out', 'payment_method'].forEach((f) => setFieldError(f, ''));
+        hideBookingAlert();
+      }
+
+      function validateForm() {
+        clearFormErrors();
+        let valid = true;
+        const checkIn = els.formCheckIn.value;
+        const checkOut = els.formCheckOut.value;
+        const today = parseISO(todayISO());
+
+        if (!checkIn) {
+          setFieldError('check_in', 'Please select a check-in date.');
+          valid = false;
+        } else if (parseISO(checkIn) < today) {
+          setFieldError('check_in', 'Check-in cannot be in the past.');
+          valid = false;
+        }
+
+        if (!checkOut) {
+          setFieldError('check_out', 'Please select a check-out date.');
+          valid = false;
+        } else if (checkIn && parseISO(checkOut) <= parseISO(checkIn)) {
+          setFieldError('check_out', 'Check-out must be after check-in.');
+          valid = false;
+        }
+
+        const nights = calcNights(checkIn, checkOut);
+        if (valid && nights > 30) {
+          setFieldError('check_out', 'Stays longer than 30 nights require a direct inquiry.');
+          valid = false;
+        }
+
+        if (!els.paymentMethod.value) {
+          setFieldError('payment_method', 'Please select a payment method.');
+          valid = false;
+        }
+
+        if (state.room?.capacity && state.search.guests) {
+          const guests = Number(state.search.guests);
+          if (guests > state.room.capacity) {
+            showBookingAlert(
+              `This residence accommodates up to ${state.room.capacity} guests. Please adjust your search.`
+            );
+            valid = false;
+          }
+        }
+
+        return valid;
+      }
+
+      function buildOrderSummaryHtml() {
+        const room = state.room;
+        if (!room) return '';
+
+        const checkIn = els.formCheckIn.value || state.search.check_in;
+        const checkOut = els.formCheckOut.value || state.search.check_out;
+        const nights = calcNights(checkIn, checkOut);
+        const total = calcTotalPrice(nights);
+        const guests = state.search.guests
+          ? `${state.search.guests} guest${Number(state.search.guests) !== 1 ? 's' : ''}`
+          : '—';
+
+        const title = `${formatRoomType(room.room_type)} · ${room.room_number || ''}`.trim();
+
+        return `
+          <p class="font-serif text-form-label text-mid-gray uppercase tracking-widest mb-4">Order summary</p>
+          <h2 class="font-serif text-h3 text-charcoal mb-6">${escapeHtml(title)}</h2>
+          <dl class="space-y-4 font-sans text-sm text-charcoal border-b border-light-border pb-6 mb-6">
+            <div class="flex justify-between gap-4">
+              <dt class="text-mid-gray">Check-in</dt>
+              <dd>${escapeHtml(formatDisplayDate(checkIn))}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-mid-gray">Check-out</dt>
+              <dd>${escapeHtml(formatDisplayDate(checkOut))}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-mid-gray">Guests</dt>
+              <dd>${escapeHtml(guests)}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-mid-gray">Nights</dt>
+              <dd id="summary-nights">${nights || '—'}</dd>
+            </div>
+            ${
+              room.price_per_night
+                ? `<div class="flex justify-between gap-4">
+              <dt class="text-mid-gray">Rate</dt>
+              <dd>${escapeHtml(formatCurrency(room.price_per_night))} / night</dd>
+            </div>`
+                : ''
+            }
+          </dl>
+          <div class="flex justify-between items-baseline gap-4">
+            <span class="font-serif text-form-label text-charcoal">Estimated total</span>
+            <span id="summary-total" class="font-serif text-h3 text-charcoal">${nights > 0 ? escapeHtml(formatCurrency(total)) : '—'}</span>
+          </div>
+        `;
+      }
+
+      function updateOrderSummary() {
+        const html = buildOrderSummaryHtml();
+        els.orderSummaryDesktop.innerHTML = html;
+        els.orderSummaryMobile.innerHTML = html;
+      }
+
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = String(str ?? '');
+        return div.innerHTML;
+      }
+
+      function setGalleryIndex(index) {
+        if (!state.galleryImages.length) return;
+        state.activeImageIndex = index;
+        const img = state.galleryImages[index];
+        els.galleryMainImage.src = img.url;
+        els.galleryMainImage.alt = img.alt;
+        els.galleryThumbs.querySelectorAll('.gallery-thumb').forEach((btn, i) => {
+          btn.classList.toggle('is-active', i === index);
+          btn.setAttribute('aria-selected', i === index ? 'true' : 'false');
+        });
+      }
+
+      function renderGallery(images) {
+        state.galleryImages = images.length
+          ? images.map((img, i) => ({
+              url: img.image_url || img.url,
+              alt: img.alt || `Room image ${i + 1}`,
+            }))
+          : PLACEHOLDER_IMAGES.map((url, i) => ({ url, alt: `Room image ${i + 1}` }));
+
+        setGalleryIndex(0);
+        els.galleryThumbs.innerHTML = '';
+
+        state.galleryImages.forEach((img, i) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'gallery-thumb flex-shrink-0 w-24 h-16 md:w-28 md:h-20 overflow-hidden border-0 border-b-2 border-transparent min-h-[44px]';
+          btn.setAttribute('role', 'tab');
+          btn.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+          btn.innerHTML = `<img src="${escapeHtml(img.url)}" alt="" class="w-full h-full object-cover" loading="lazy" />`;
+          btn.addEventListener('click', () => setGalleryIndex(i));
+          els.galleryThumbs.appendChild(btn);
+        });
+
+        if (state.galleryImages.length) {
+          els.galleryThumbs.children[0]?.classList.add('is-active');
+        }
+      }
+
+      function renderRoomDetails(room) {
+        const title = `${formatRoomType(room.room_type)} · ${room.room_number || ''}`.trim();
+        document.title = `Residences — ${title}`;
+        els.roomTypeLabel.textContent = formatRoomType(room.room_type);
+        els.roomTitle.textContent = title;
+        els.roomDescription.textContent =
+          room.description ||
+          'A serene residence conceived for unhurried stays—refined materials, generous light, and quiet sophistication throughout.';
+
+        const specs = [];
+        if (room.capacity) specs.push(`Accommodates up to ${room.capacity} guests`);
+        if (room.status) specs.push(`Status: ${room.status}`);
+        if (room.price_per_night) specs.push(`From ${formatCurrency(room.price_per_night)} per night`);
+
+        els.roomSpecs.innerHTML = specs
+          .map((s) => `<li class="flex items-start gap-2"><span aria-hidden="true">—</span><span>${escapeHtml(s)}</span></li>`)
+          .join('');
+
+        const apiImages = Array.isArray(room.images) ? room.images : [];
+        const sorted = [...apiImages].sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0));
+        renderGallery(sorted);
+      }
+
+      function syncFormDates() {
+        els.formCheckIn.value = state.search.check_in || '';
+        els.formCheckOut.value = state.search.check_out || '';
+        const today = todayISO();
+        els.formCheckIn.min = today;
+        if (els.formCheckIn.value) {
+          const next = new Date(parseISO(els.formCheckIn.value).getTime() + MS_DAY);
+          els.formCheckOut.min = formatISO(next);
+        } else {
+          els.formCheckOut.min = today;
+        }
+      }
+
+      function updateBackLink() {
+        const q = new URLSearchParams();
+        if (state.search.check_in) q.set('check_in', state.search.check_in);
+        if (state.search.check_out) q.set('check_out', state.search.check_out);
+        if (state.search.guests) q.set('guests', state.search.guests);
+        const qs = q.toString();
+        els.backToRooms.href = qs ? `${ROOMS_LIST_PATH}?${qs}` : ROOMS_LIST_PATH;
+      }
+
+      async function fetchRoomDetail(roomId) {
+        showPageState('loading');
+        const url = `${API_BASE}/rooms/${encodeURIComponent(roomId)}`;
+
+        try {
+          const response = await fetch(url, {
+            headers: { Accept: 'application/json' },
+          });
+
+          let payload = null;
+          try {
+            payload = await response.json();
+          } catch {
+            payload = null;
+          }
+
+          if (!response.ok) {
+            throw new Error(payload?.message || `Unable to load room (${response.status}).`);
+          }
+
+          if (payload?.success === false) {
+            throw new Error(payload.message || 'Room not found.');
+          }
+
+          const room = payload?.data ?? payload;
+          if (!room?.id) {
+            throw new Error('Invalid room data received.');
+          }
+
+          state.room = room;
+          els.formRoomId.value = String(room.id);
+          renderRoomDetails(room);
+          syncFormDates();
+          updateOrderSummary();
+          updateBackLink();
+
+          showPageState('content');
+          initReveal();
+        } catch (err) {
+          els.loadErrorMessage.textContent =
+            err instanceof Error ? err.message : 'An unexpected error occurred.';
+          showPageState('error');
+        }
+      }
+
+      function setSubmitting(loading) {
+        els.submitBtn.disabled = loading;
+        els.submitLabel.classList.toggle('hidden', loading);
+        els.submitLoading.classList.toggle('hidden', !loading);
+        els.submitLoading.classList.toggle('inline-flex', loading);
+      }
+
+      function persistBookingAndRedirect(bookingData, paymentMethod) {
+        const payload = {
+          ...bookingData,
+          payment_method: paymentMethod,
+          room: {
+            id: state.room.id,
+            room_number: state.room.room_number,
+            room_type: state.room.room_type,
+            price_per_night: state.room.price_per_night,
+          },
+          search: { ...state.search },
+          saved_at: new Date().toISOString(),
+        };
+
+        try {
+          sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        } catch {
+          /* sessionStorage full or unavailable */
+        }
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        } catch {
+          /* ignore */
+        }
+
+        const bookingId = bookingData.booking_id ?? bookingData.id;
+        const confirmUrl = new URL(BOOKING_CONFIRM_PATH, window.location.origin);
+        if (bookingId) confirmUrl.searchParams.set('booking_id', String(bookingId));
+        window.location.href = confirmUrl.pathname + confirmUrl.search;
+      }
+
+      async function submitBooking(e) {
+        e.preventDefault();
+        hideBookingAlert();
+
+        if (!validateForm()) return;
+
+        const checkIn = els.formCheckIn.value;
+        const checkOut = els.formCheckOut.value;
+        const paymentMethod = els.paymentMethod.value;
+        const userId = Number(els.formUserId.value) || MOCK_USER_ID;
+        const roomId = Number(els.formRoomId.value);
+
+        const body = {
+          user_id: userId,
+          room_id: roomId,
+          check_in: checkIn,
+          check_out: checkOut,
+          payment_method: paymentMethod,
+        };
+
+        setSubmitting(true);
+
+        try {
+          const response = await fetch(`${API_BASE}/bookings`, {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+          });
+
+          let payload = null;
+          try {
+            payload = await response.json();
+          } catch {
+            payload = null;
+          }
+
+          if (response.status === 400 && payload?.error_code === 'ROOM_NOT_AVAILABLE') {
+            showBookingAlert(
+              payload.message ||
+                'This residence is not available for the selected dates. Please adjust your stay or choose another room.'
+            );
+            return;
+          }
+
+          if (!response.ok || payload?.success === false) {
+            showBookingAlert(
+              payload?.message || `Reservation could not be completed (${response.status}).`
+            );
+            return;
+          }
+
+          const data = payload?.data ?? payload;
+          if (!data?.booking_id && !data?.id) {
+            showBookingAlert('Reservation completed but confirmation data was incomplete.');
+            return;
+          }
+
+          persistBookingAndRedirect(data, paymentMethod);
+        } catch {
+          showBookingAlert(
+            'A network error occurred. Please check your connection and try again.'
+          );
+        } finally {
+          setSubmitting(false);
+        }
+      }
+
+      function initReveal() {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.1 }
+        );
+        document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+      }
+
+      function openLightbox() {
+        const img = state.galleryImages[state.activeImageIndex];
+        if (!img) return;
+        els.lightboxImg.src = img.url;
+        els.lightboxImg.alt = img.alt;
+        els.lightbox.classList.remove('is-closed');
+        els.lightbox.classList.add('is-open');
+        els.lightbox.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeLightbox() {
+        els.lightbox.classList.add('is-closed');
+        els.lightbox.classList.remove('is-open');
+        els.lightbox.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+
+      function bindEvents() {
+        els.formCheckIn.addEventListener('change', () => {
+          if (els.formCheckIn.value) {
+            const next = new Date(parseISO(els.formCheckIn.value).getTime() + MS_DAY);
+            els.formCheckOut.min = formatISO(next);
+            if (els.formCheckOut.value && els.formCheckOut.value <= els.formCheckIn.value) {
+              els.formCheckOut.value = '';
+            }
+          }
+          state.search.check_in = els.formCheckIn.value;
+          setFieldError('check_in', '');
+          els.formCheckIn.closest('.field-valid')?.classList.toggle('is-valid', !!els.formCheckIn.value);
+          updateOrderSummary();
+        });
+
+        els.formCheckOut.addEventListener('change', () => {
+          state.search.check_out = els.formCheckOut.value;
+          setFieldError('check_out', '');
+          els.formCheckOut.closest('.field-valid')?.classList.toggle('is-valid', !!els.formCheckOut.value);
+          updateOrderSummary();
+        });
+
+        els.paymentMethod.addEventListener('change', () => {
+          setFieldError('payment_method', '');
+          els.paymentMethod.closest('.field-valid')?.classList.toggle('is-valid', !!els.paymentMethod.value);
+        });
+
+        els.form.addEventListener('submit', submitBooking);
+        els.retryLoadBtn.addEventListener('click', () => {
+          const roomId = resolveRoomId();
+          if (roomId) fetchRoomDetail(roomId);
+        });
+        els.galleryMainTrigger.addEventListener('click', openLightbox);
+        els.lightboxClose.addEventListener('click', closeLightbox);
+        els.lightbox.addEventListener('click', (ev) => {
+          if (ev.target === els.lightbox) closeLightbox();
+        });
+        document.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Escape') closeLightbox();
+        });
+      }
+
+      function init() {
+        bindEvents();
+        state.search = parseSearchQuery();
+        updateBackLink();
+
+        const roomId = resolveRoomId();
+        if (!roomId) {
+          els.loadErrorMessage.textContent = 'Room identifier is missing from the URL.';
+          showPageState('error');
+          return;
+        }
+
+        fetchRoomDetail(roomId);
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

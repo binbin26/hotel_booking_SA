@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Residences — Hotel Booking</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            charcoal: '#313131',
+            cream: '#F3EEE7',
+            'mid-gray': '#82847F',
+            'light-border': '#DBDBDB',
+            'dark-gray': '#55565B',
+            accent: '#007DFA',
+            gold: '#ACCEF0',
+          },
+          fontFamily: {
+            display: ['"Lyon Display Web"', 'Georgia', 'serif'],
+            serif: ['"Lyon Text Web"', 'Georgia', 'serif'],
+            sans: ['WhitneySSm', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+          },
+          transitionTimingFunction: {
+            aman: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          },
+          maxWidth: {
+            content: '1440px',
+          },
+          fontSize: {
+            'display-hero': ['40px', { lineHeight: '58px', letterSpacing: '0' }],
+            h2: ['31px', { lineHeight: '45px' }],
+            h3: ['20px', { lineHeight: '28px' }],
+            'form-label': ['10px', { lineHeight: '14px' }],
+          },
+          spacing: {
+            13: '52px',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      --ease-aman: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --charcoal: #313131;
+      --cream: #f3eee7;
+    }
+
+    * { border-radius: 0 !important; }
+    .rounded-search { border-radius: 50px !important; }
+
+    @keyframes ken-burns {
+      from { transform: scale(1); }
+      to { transform: scale(1.05); }
+    }
+
+    .hero-ken-burns {
+      animation: ken-burns 10s var(--ease-aman) forwards;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 800ms var(--ease-aman), transform 800ms var(--ease-aman);
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-delay-1 { transition-delay: 100ms; }
+    .reveal-delay-2 { transition-delay: 200ms; }
+
+    .skeleton {
+      background: linear-gradient(
+        90deg,
+        #dbdbdb 0%,
+        #f3eee7 50%,
+        #dbdbdb 100%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.2s ease-in-out infinite;
+    }
+
+    @keyframes skeleton-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .input-focus-line:focus {
+      outline: none;
+      border-bottom: 1px solid var(--charcoal);
+    }
+
+    .input-error {
+      border-bottom: 1px solid var(--charcoal) !important;
+    }
+
+    .btn-primary {
+      transition: background-color 250ms var(--ease-aman),
+        color 250ms var(--ease-aman),
+        transform 150ms var(--ease-aman);
+    }
+
+    .btn-primary:hover {
+      background-color: #000;
+      color: #fff;
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+      background-color: #55565b;
+    }
+
+    .nav-link {
+      transition: color 250ms var(--ease-aman);
+    }
+
+    .nav-link:hover {
+      color: #000;
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 4px;
+    }
+
+    .calendar-overlay {
+      transition: opacity 400ms var(--ease-aman), transform 400ms var(--ease-aman);
+    }
+
+    .calendar-overlay.is-open {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .calendar-overlay.is-closed {
+      opacity: 0;
+      transform: translateY(-10px);
+      pointer-events: none;
+    }
+
+    .page-blur.is-blurred {
+      filter: blur(4px);
+      transition: filter 400ms var(--ease-aman);
+    }
+
+    #booking-bar.is-sticky-top {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 40;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+  </style>
+</head>
+<body class="bg-white text-charcoal font-sans antialiased page-blur" id="page-root">
+
+  <!-- Header -->
+  <header
+    id="site-header"
+    class="absolute top-0 left-0 right-0 z-30 transition-colors duration-[250ms] ease-aman"
+  >
+    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10">
+      <div class="flex items-center justify-between py-4 md:py-5">
+        <a href="/" class="font-display text-sm md:text-base text-cream nav-link !text-cream hover:!text-white no-underline">
+          Residences
+        </a>
+
+        <nav class="hidden md:flex items-center gap-4 lg:gap-8 font-display text-sm text-cream">
+          <a href="#destinations" class="nav-link !text-cream hover:!text-white">Destinations</a>
+          <a href="#experiences" class="nav-link !text-cream hover:!text-white">Experiences</a>
+          <a href="#about" class="nav-link !text-cream hover:!text-white">About</a>
+        </nav>
+
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            id="menu-toggle"
+            class="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center text-cream font-display text-xl"
+            aria-label="Open menu"
+            aria-expanded="false"
+          >
+            &#9776;
+          </button>
+          <a
+            href="#booking-bar"
+            class="hidden sm:inline-flex btn-primary items-center justify-center h-[42px] min-h-[44px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm leading-5"
+          >
+            Reserve
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile drawer -->
+  <div
+    id="mobile-drawer"
+    class="fixed inset-0 z-50 calendar-overlay is-closed md:hidden"
+    aria-hidden="true"
+  >
+    <div class="absolute inset-0 bg-black/50" id="drawer-backdrop"></div>
+    <nav class="absolute top-0 right-0 h-full w-[min(100%,320px)] bg-white p-8 flex flex-col gap-6 font-display text-base">
+      <button type="button" id="drawer-close" class="self-end min-h-[44px] min-w-[44px] text-charcoal" aria-label="Close menu">&times;</button>
+      <a href="#destinations" class="nav-link min-h-[44px] flex items-center drawer-link">Destinations</a>
+      <a href="#experiences" class="nav-link min-h-[44px] flex items-center drawer-link">Experiences</a>
+      <a href="#about" class="nav-link min-h-[44px] flex items-center drawer-link">About</a>
+      <a href="#booking-bar" class="btn-primary mt-4 inline-flex items-center justify-center h-[44px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm drawer-link">
+        Reserve
+      </a>
+    </nav>
+  </div>
+
+  <!-- Hero -->
+  <section class="relative min-h-[100svh] flex flex-col justify-end overflow-hidden" aria-label="Hero">
+    <div class="absolute inset-0">
+      <img
+        src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2400&q=80"
+        alt="Serene resort pool at dusk"
+        class="w-full h-full object-cover hero-ken-burns"
+        width="2400"
+        height="1600"
+        fetchpriority="high"
+      />
+      <div class="absolute inset-0 bg-black/50" aria-hidden="true"></div>
+    </div>
+
+    <div class="relative z-10 mx-auto max-w-content w-full px-4 md:px-6 lg:px-10 pb-36 md:pb-44 lg:pb-52 pt-28">
+      <p class="reveal font-serif text-form-label text-cream/90 uppercase tracking-widest mb-4">
+        A sanctuary of calm
+      </p>
+      <h1 class="reveal reveal-delay-1 font-display text-display-hero md:text-[40px] text-[28px] md:leading-[58px] leading-[38px] text-cream max-w-3xl">
+        Where stillness becomes the journey
+      </h1>
+      <p class="reveal reveal-delay-2 mt-6 font-sans text-sm md:text-base text-cream/90 max-w-xl leading-5 md:leading-6">
+        Discover refined residences immersed in nature. Begin your stay with dates that honor unhurried time.
+      </p>
+    </div>
+  </section>
+
+  <!-- Booking Bar -->
+  <section
+    id="booking-bar"
+    class="relative z-20 -mt-20 md:-mt-24 mx-auto max-w-content w-full px-4 md:px-6 lg:px-10"
+    aria-label="Search availability"
+  >
+    <div class="bg-cream p-6 md:p-8 lg:p-10 shadow-[0_4px_12px_rgba(0,0,0,0.15)] reveal">
+      <h2 class="font-serif text-h3 text-charcoal mb-6 md:mb-8">Plan your stay</h2>
+
+      <form id="booking-search-form" class="space-y-6" novalidate>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+          <!-- Check-in -->
+          <div class="flex flex-col">
+            <label for="check_in" class="font-serif text-form-label text-charcoal pb-1">Check-in</label>
+            <button
+              type="button"
+              id="check_in_trigger"
+              class="input-focus-line text-left bg-white text-black font-sans text-base leading-[18px] px-[7px] py-2 min-h-[44px] md:min-h-[36px] border-0 border-b border-light-border w-full"
+              aria-haspopup="dialog"
+              aria-controls="calendar-overlay"
+            >
+              <span id="check_in_display" class="text-mid-gray">Select date</span>
+            </button>
+            <input type="hidden" id="check_in" name="check_in" required />
+            <p id="check_in_error" class="hidden mt-2 font-sans text-form-label text-charcoal" role="alert"></p>
+          </div>
+
+          <!-- Check-out -->
+          <div class="flex flex-col">
+            <label for="check_out" class="font-serif text-form-label text-charcoal pb-1">Check-out</label>
+            <button
+              type="button"
+              id="check_out_trigger"
+              class="input-focus-line text-left bg-white text-black font-sans text-base leading-[18px] px-[7px] py-2 min-h-[44px] md:min-h-[36px] border-0 border-b border-light-border w-full"
+              aria-haspopup="dialog"
+              aria-controls="calendar-overlay"
+            >
+              <span id="check_out_display" class="text-mid-gray">Select date</span>
+            </button>
+            <input type="hidden" id="check_out" name="check_out" required />
+            <p id="check_out_error" class="hidden mt-2 font-sans text-form-label text-charcoal" role="alert"></p>
+          </div>
+
+          <!-- Guests -->
+          <div class="flex flex-col sm:col-span-2 lg:col-span-1">
+            <label for="guests" class="font-serif text-form-label text-charcoal pb-1">Guests</label>
+            <select
+              id="guests"
+              name="guests"
+              class="input-focus-line bg-white text-black font-sans text-base leading-[18px] px-[7px] py-2 min-h-[44px] md:min-h-[36px] border-0 border-b border-light-border w-full appearance-none cursor-pointer"
+              required
+            >
+              <option value="" disabled selected>Select guests</option>
+              {% for n in range(1, 9) %}
+              <option value="{{ n }}">{{ n }} {% if n == 1 %}Guest{% else %}Guests{% endif %}</option>
+              {% endfor %}
+            </select>
+            <p id="guests_error" class="hidden mt-2 font-sans text-form-label text-charcoal" role="alert"></p>
+          </div>
+
+          <!-- Submit -->
+          <div class="flex flex-col justify-end sm:col-span-2 lg:col-span-1">
+            <button
+              type="submit"
+              id="search-submit"
+              class="btn-primary w-full inline-flex items-center justify-center min-h-[44px] h-[42px] px-[15px] py-[10px] border border-charcoal bg-charcoal text-cream font-sans text-sm leading-5 disabled:bg-light-border disabled:text-mid-gray disabled:border-light-border disabled:cursor-not-allowed"
+            >
+              <span id="search-submit-label">Search availability</span>
+              <span id="search-submit-loading" class="hidden items-center gap-2">
+                <span class="inline-block w-4 h-4 skeleton rounded-search" aria-hidden="true"></span>
+                Searching…
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <p id="form_error" class="hidden font-sans text-form-label text-charcoal border-l-2 border-charcoal pl-3" role="alert"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- Intro sections -->
+  <section id="destinations" class="mx-auto max-w-content px-4 md:px-6 lg:px-10 py-13 md:py-20 lg:py-[52px]">
+    <div class="reveal max-w-[600px]">
+      <h2 class="font-serif text-h2 text-charcoal mb-6">Destinations</h2>
+      <p class="font-sans text-sm md:text-base leading-5 md:leading-6 text-charcoal">
+        From coastal sanctuaries to mountain retreats, each residence is conceived as a dialogue between architecture and landscape—minimal, deliberate, and deeply restorative.
+      </p>
+      <a href="/rooms" class="inline-block mt-8 font-sans text-sm text-charcoal underline decoration-charcoal underline-offset-4 hover:text-black hover:decoration-black transition-colors duration-[250ms] ease-aman">
+        Discover residences
+      </a>
+    </div>
+  </section>
+
+  <section id="experiences" class="bg-cream">
+    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10 py-13 md:py-20 lg:py-[52px]">
+      <div class="reveal max-w-[600px]">
+        <h2 class="font-serif text-h2 text-charcoal mb-6">Experiences</h2>
+        <p class="font-sans text-sm md:text-base leading-5 md:leading-6 text-charcoal">
+          Wellness rituals, private dining, and curated cultural immersions unfold at an unhurried pace—crafted for those who value presence over spectacle.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" class="mx-auto max-w-content px-4 md:px-6 lg:px-10 py-13 md:py-20 lg:py-[52px] border-t border-light-border">
+    <div class="reveal max-w-[600px]">
+      <h2 class="font-serif text-h2 text-charcoal mb-6">Our philosophy</h2>
+      <p class="font-sans text-sm md:text-base leading-5 md:leading-6 text-charcoal">
+        We believe luxury is the absence of excess. Every detail—from typography to touchpoints—invites contemplation and ease.
+      </p>
+    </div>
+  </section>
+
+  <footer class="border-t border-light-border py-10">
+    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10 flex flex-col md:flex-row justify-between gap-4">
+      <p class="font-display text-sm text-charcoal">Residences</p>
+      <p class="font-sans text-form-label text-mid-gray">&copy; {{ current_year | default(2026) }} All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Calendar overlay -->
+  <div
+    id="calendar-overlay"
+    class="fixed inset-0 z-[60] calendar-overlay is-closed flex items-center justify-center p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="calendar-title"
+    aria-hidden="true"
+  >
+    <div class="absolute inset-0 bg-black/40" id="calendar-backdrop"></div>
+    <div class="relative bg-white w-full max-w-[600px] p-8 md:p-10 shadow-[0_4px_12px_rgba(0,0,0,0.15)] max-h-[90vh] overflow-y-auto">
+      <div class="flex items-start justify-between mb-8">
+        <h3 id="calendar-title" class="font-serif text-h3 text-charcoal">Select dates</h3>
+        <button type="button" id="calendar-close" class="min-h-[44px] min-w-[44px] text-charcoal font-display text-2xl leading-none" aria-label="Close calendar">&times;</button>
+      </div>
+      <p id="calendar-hint" class="font-sans text-sm text-mid-gray mb-6">Choose your check-in and check-out dates.</p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+        <div>
+          <label for="calendar_check_in" class="font-serif text-form-label text-charcoal block pb-2">Check-in</label>
+          <input
+            type="date"
+            id="calendar_check_in"
+            class="input-focus-line w-full bg-white text-black font-sans text-base px-[7px] py-2 min-h-[44px] border-0 border-b border-light-border"
+          />
+        </div>
+        <div>
+          <label for="calendar_check_out" class="font-serif text-form-label text-charcoal block pb-2">Check-out</label>
+          <input
+            type="date"
+            id="calendar_check_out"
+            class="input-focus-line w-full bg-white text-black font-sans text-base px-[7px] py-2 min-h-[44px] border-0 border-b border-light-border"
+          />
+        </div>
+      </div>
+
+      <p id="calendar_error" class="hidden mt-4 font-sans text-form-label text-charcoal" role="alert"></p>
+
+      <div class="mt-10 flex flex-col sm:flex-row gap-4 sm:justify-end">
+        <button
+          type="button"
+          id="calendar-clear"
+          class="min-h-[44px] font-sans text-sm text-charcoal underline decoration-charcoal underline-offset-4 hover:text-black transition-colors duration-[250ms] ease-aman"
+        >
+          Clear
+        </button>
+        <button
+          type="button"
+          id="calendar-apply"
+          class="btn-primary min-h-[44px] h-[42px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm"
+        >
+          Apply dates
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const MS_DAY = 86400000;
+      const roomsSearchPath = "{{ rooms_search_path | default('/rooms') }}";
+
+      const els = {
+        form: document.getElementById('booking-search-form'),
+        checkIn: document.getElementById('check_in'),
+        checkOut: document.getElementById('check_out'),
+        checkInDisplay: document.getElementById('check_in_display'),
+        checkOutDisplay: document.getElementById('check_out_display'),
+        guests: document.getElementById('guests'),
+        checkInTrigger: document.getElementById('check_in_trigger'),
+        checkOutTrigger: document.getElementById('check_out_trigger'),
+        formError: document.getElementById('form_error'),
+        submitBtn: document.getElementById('search-submit'),
+        submitLabel: document.getElementById('search-submit-label'),
+        submitLoading: document.getElementById('search-submit-loading'),
+        bookingBar: document.getElementById('booking-bar'),
+        header: document.getElementById('site-header'),
+        calendarOverlay: document.getElementById('calendar-overlay'),
+        calendarBackdrop: document.getElementById('calendar-backdrop'),
+        calendarClose: document.getElementById('calendar-close'),
+        calendarApply: document.getElementById('calendar-apply'),
+        calendarClear: document.getElementById('calendar-clear'),
+        calendarCheckIn: document.getElementById('calendar_check_in'),
+        calendarCheckOut: document.getElementById('calendar_check_out'),
+        calendarError: document.getElementById('calendar_error'),
+        calendarHint: document.getElementById('calendar-hint'),
+        pageRoot: document.getElementById('page-root'),
+        menuToggle: document.getElementById('menu-toggle'),
+        mobileDrawer: document.getElementById('mobile-drawer'),
+        drawerBackdrop: document.getElementById('drawer-backdrop'),
+        drawerClose: document.getElementById('drawer-close'),
+      };
+
+      let calendarTarget = 'check_in';
+      let heroBottom = 0;
+
+      function todayISO() {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        return formatISO(d);
+      }
+
+      function formatISO(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      }
+
+      function parseISO(str) {
+        const [y, m, d] = str.split('-').map(Number);
+        return new Date(y, m - 1, d);
+      }
+
+      function formatDisplay(iso) {
+        if (!iso) return null;
+        return parseISO(iso).toLocaleDateString(undefined, {
+          weekday: 'short',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        });
+      }
+
+      function setMinDates() {
+        const today = todayISO();
+        els.calendarCheckIn.min = today;
+        els.calendarCheckOut.min = today;
+      }
+
+      function showFieldError(fieldId, message) {
+        const map = {
+          check_in: 'check_in_error',
+          check_out: 'check_out_error',
+          guests: 'guests_error',
+        };
+        const errEl = document.getElementById(map[fieldId]);
+        const trigger =
+          fieldId === 'check_in'
+            ? els.checkInTrigger
+            : fieldId === 'check_out'
+              ? els.checkOutTrigger
+              : els.guests;
+        if (errEl) {
+          errEl.textContent = message;
+          errEl.classList.toggle('hidden', !message);
+        }
+        if (trigger) trigger.classList.toggle('input-error', Boolean(message));
+      }
+
+      function clearErrors() {
+        ['check_in', 'check_out', 'guests'].forEach((f) => showFieldError(f, ''));
+        els.formError.classList.add('hidden');
+        els.formError.textContent = '';
+      }
+
+      function validateDates(checkIn, checkOut) {
+        const errors = [];
+        const today = parseISO(todayISO());
+
+        if (!checkIn) errors.push({ field: 'check_in', msg: 'Please select a check-in date.' });
+        if (!checkOut) errors.push({ field: 'check_out', msg: 'Please select a check-out date.' });
+
+        if (checkIn && checkOut) {
+          const inDate = parseISO(checkIn);
+          const outDate = parseISO(checkOut);
+
+          if (inDate < today) {
+            errors.push({ field: 'check_in', msg: 'Check-in cannot be in the past.' });
+          }
+          if (outDate <= inDate) {
+            errors.push({ field: 'check_out', msg: 'Check-out must be after check-in.' });
+          }
+          const nights = Math.round((outDate - inDate) / MS_DAY);
+          if (nights > 30) {
+            errors.push({ field: 'form', msg: 'Stays longer than 30 nights require a direct inquiry.' });
+          }
+        }
+
+        return errors;
+      }
+
+      function applyDatesToForm(checkIn, checkOut) {
+        els.checkIn.value = checkIn || '';
+        els.checkOut.value = checkOut || '';
+        els.checkInDisplay.textContent = checkIn ? formatDisplay(checkIn) : 'Select date';
+        els.checkOutDisplay.textContent = checkOut ? formatDisplay(checkOut) : 'Select date';
+        els.checkInDisplay.classList.toggle('text-mid-gray', !checkIn);
+        els.checkOutDisplay.classList.toggle('text-mid-gray', !checkOut);
+        els.checkInDisplay.classList.toggle('text-black', Boolean(checkIn));
+        els.checkOutDisplay.classList.toggle('text-black', Boolean(checkOut));
+
+        if (checkIn) {
+          const nextDay = new Date(parseISO(checkIn).getTime() + MS_DAY);
+          els.calendarCheckOut.min = formatISO(nextDay);
+        } else {
+          els.calendarCheckOut.min = todayISO();
+        }
+      }
+
+      function openCalendar(target) {
+        calendarTarget = target;
+        els.calendarHint.textContent =
+          target === 'check_in'
+            ? 'Select your check-in date.'
+            : 'Select your check-out date.';
+        els.calendarCheckIn.value = els.checkIn.value || '';
+        els.calendarCheckOut.value = els.checkOut.value || '';
+        els.calendarError.classList.add('hidden');
+        els.calendarOverlay.classList.remove('is-closed');
+        els.calendarOverlay.classList.add('is-open');
+        els.calendarOverlay.setAttribute('aria-hidden', 'false');
+        els.pageRoot.classList.add('is-blurred');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeCalendar() {
+        els.calendarOverlay.classList.add('is-closed');
+        els.calendarOverlay.classList.remove('is-open');
+        els.calendarOverlay.setAttribute('aria-hidden', 'true');
+        els.pageRoot.classList.remove('is-blurred');
+        document.body.style.overflow = '';
+      }
+
+      function openDrawer() {
+        els.mobileDrawer.classList.remove('is-closed');
+        els.mobileDrawer.classList.add('is-open');
+        els.mobileDrawer.setAttribute('aria-hidden', 'false');
+        els.menuToggle.setAttribute('aria-expanded', 'true');
+        els.pageRoot.classList.add('is-blurred');
+      }
+
+      function closeDrawer() {
+        els.mobileDrawer.classList.add('is-closed');
+        els.mobileDrawer.classList.remove('is-open');
+        els.mobileDrawer.setAttribute('aria-hidden', 'true');
+        els.menuToggle.setAttribute('aria-expanded', 'false');
+        els.pageRoot.classList.remove('is-blurred');
+      }
+
+      function setSubmitting(loading) {
+        els.submitBtn.disabled = loading;
+        els.submitLabel.classList.toggle('hidden', loading);
+        els.submitLoading.classList.toggle('hidden', loading);
+        els.submitLoading.classList.toggle('inline-flex', loading);
+      }
+
+      function buildSearchUrl(checkIn, checkOut, guests) {
+        const params = new URLSearchParams({
+          check_in: checkIn,
+          check_out: checkOut,
+          guests: String(guests),
+        });
+        const base =
+          typeof roomsSearchPath === 'string'
+            ? roomsSearchPath
+            : '/rooms';
+        return `${base}?${params.toString()}`;
+      }
+
+      els.checkInTrigger.addEventListener('click', () => openCalendar('check_in'));
+      els.checkOutTrigger.addEventListener('click', () => openCalendar('check_out'));
+      els.calendarClose.addEventListener('click', closeCalendar);
+      els.calendarBackdrop.addEventListener('click', closeCalendar);
+
+      els.calendarClear.addEventListener('click', () => {
+        els.calendarCheckIn.value = '';
+        els.calendarCheckOut.value = '';
+        els.calendarError.classList.add('hidden');
+        setMinDates();
+      });
+
+      els.calendarApply.addEventListener('click', () => {
+        const checkIn = els.calendarCheckIn.value;
+        const checkOut = els.calendarCheckOut.value;
+        const errors = validateDates(checkIn, checkOut);
+
+        if (errors.length) {
+          els.calendarError.textContent = errors.map((e) => e.msg).join(' ');
+          els.calendarError.classList.remove('hidden');
+          return;
+        }
+
+        applyDatesToForm(checkIn, checkOut);
+        closeCalendar();
+        clearErrors();
+      });
+
+      els.calendarCheckIn.addEventListener('change', () => {
+        if (els.calendarCheckIn.value) {
+          const next = new Date(parseISO(els.calendarCheckIn.value).getTime() + MS_DAY);
+          els.calendarCheckOut.min = formatISO(next);
+          if (els.calendarCheckOut.value && els.calendarCheckOut.value <= els.calendarCheckIn.value) {
+            els.calendarCheckOut.value = '';
+          }
+        }
+      });
+
+      els.menuToggle.addEventListener('click', openDrawer);
+      els.drawerClose.addEventListener('click', closeDrawer);
+      els.drawerBackdrop.addEventListener('click', closeDrawer);
+      document.querySelectorAll('.drawer-link').forEach((link) => {
+        link.addEventListener('click', closeDrawer);
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeCalendar();
+          closeDrawer();
+        }
+      });
+
+      els.form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        clearErrors();
+
+        const checkIn = els.checkIn.value;
+        const checkOut = els.checkOut.value;
+        const guests = els.guests.value;
+
+        let hasError = false;
+        const dateErrors = validateDates(checkIn, checkOut);
+        dateErrors.forEach(({ field, msg }) => {
+          if (field === 'form') {
+            els.formError.textContent = msg;
+            els.formError.classList.remove('hidden');
+          } else {
+            showFieldError(field, msg);
+          }
+          hasError = true;
+        });
+
+        if (!guests) {
+          showFieldError('guests', 'Please select the number of guests.');
+          hasError = true;
+        }
+
+        if (hasError) return;
+
+        setSubmitting(true);
+        window.location.href = buildSearchUrl(checkIn, checkOut, guests);
+      });
+
+      function updateStickyBar() {
+        const hero = document.querySelector('section[aria-label="Hero"]');
+        if (!hero) return;
+        heroBottom = hero.offsetTop + hero.offsetHeight;
+        const scrollY = window.scrollY;
+        const barInner = els.bookingBar.querySelector('.bg-cream');
+
+        if (scrollY > heroBottom - 120) {
+          els.bookingBar.classList.add('is-sticky-top');
+          if (barInner) barInner.classList.remove('-mt-20', 'md:-mt-24');
+          els.header.classList.remove('absolute', 'text-cream');
+          els.header.classList.add('fixed', 'top-0', 'bg-white', 'shadow-[0_2px_4px_rgba(0,0,0,0.08)]');
+          els.header.querySelectorAll('.nav-link').forEach((a) => {
+            a.classList.remove('!text-cream', 'hover:!text-white');
+            a.classList.add('text-charcoal');
+          });
+          els.menuToggle.classList.remove('text-cream');
+          els.menuToggle.classList.add('text-charcoal');
+        } else {
+          els.bookingBar.classList.remove('is-sticky-top');
+          els.header.classList.add('absolute');
+          els.header.classList.remove('fixed', 'top-0', 'bg-white', 'shadow-[0_2px_4px_rgba(0,0,0,0.08)]');
+          els.header.querySelectorAll('a, button#menu-toggle').forEach((el) => {
+            if (el.id !== 'menu-toggle' && el.closest('nav, .flex')) {
+              el.classList.add('!text-cream');
+            }
+          });
+          els.menuToggle.classList.add('text-cream');
+          els.menuToggle.classList.remove('text-charcoal');
+        }
+      }
+
+      function initReveal() {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+        );
+        document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+      }
+
+      setMinDates();
+      initReveal();
+      window.addEventListener('scroll', updateStickyBar, { passive: true });
+      window.addEventListener('resize', updateStickyBar);
+      updateStickyBar();
+
+      requestAnimationFrame(() => {
+        document.querySelectorAll('.reveal').forEach((el, i) => {
+          if (i < 3) el.classList.add('is-visible');
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

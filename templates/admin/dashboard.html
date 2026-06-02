@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Residences Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            charcoal: '#313131',
+            cream: '#F3EEE7',
+            'mid-gray': '#82847F',
+            'light-border': '#DBDBDB',
+            'dark-gray': '#55565B',
+          },
+          fontFamily: {
+            display: ['"Lyon Display Web"', 'Georgia', 'serif'],
+            serif: ['"Lyon Text Web"', 'Georgia', 'serif'],
+            sans: ['WhitneySSm', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+          },
+          transitionTimingFunction: {
+            aman: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          },
+          fontSize: {
+            h1: ['31px', { lineHeight: '45px' }],
+            h2: ['20px', { lineHeight: '28px' }],
+            'form-label': ['10px', { lineHeight: '14px' }],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      --ease-aman: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --charcoal: #313131;
+      --cream: #f3eee7;
+    }
+
+    * { border-radius: 0 !important; }
+
+    .skeleton {
+      background: linear-gradient(90deg, #dbdbdb 0%, #f3eee7 50%, #dbdbdb 100%);
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.2s ease-in-out infinite;
+    }
+
+    @keyframes skeleton-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .sidebar-link {
+      transition: background-color 250ms var(--ease-aman), color 250ms var(--ease-aman);
+    }
+
+    .sidebar-link.is-active {
+      background-color: var(--charcoal);
+      color: #f3eee7;
+    }
+
+    .filter-pill {
+      transition: background-color 250ms var(--ease-aman),
+        color 250ms var(--ease-aman),
+        border-color 250ms var(--ease-aman);
+    }
+
+    .filter-pill.is-active {
+      background-color: var(--charcoal);
+      color: #f3eee7;
+      border-color: var(--charcoal);
+    }
+
+    .btn-primary {
+      transition: background-color 250ms var(--ease-aman),
+        color 250ms var(--ease-aman),
+        transform 150ms var(--ease-aman);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: #000;
+      color: #fff;
+    }
+
+    .btn-primary:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .btn-ghost {
+      transition: color 250ms var(--ease-aman), transform 150ms var(--ease-aman);
+    }
+
+    .btn-ghost:hover {
+      color: #000;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .btn-ghost:active {
+      transform: scale(0.98);
+    }
+
+    .form-input {
+      transition: border-color 250ms var(--ease-aman);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-bottom-color: var(--charcoal) !important;
+    }
+
+    .modal-backdrop {
+      opacity: 0;
+      transition: opacity 400ms var(--ease-aman);
+      backdrop-filter: blur(0);
+    }
+
+    .modal-backdrop.is-open {
+      opacity: 1;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-panel {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 400ms var(--ease-aman), transform 400ms var(--ease-aman);
+    }
+
+    .modal-backdrop.is-open .modal-panel {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .toast {
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 400ms var(--ease-aman), transform 400ms var(--ease-aman);
+    }
+
+    .toast.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .table-scroll {
+      -webkit-overflow-scrolling: touch;
+    }
+
+    @media (max-width: 1023px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 400ms var(--ease-aman);
+      }
+      .sidebar.is-open {
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+<body class="bg-white text-charcoal font-sans antialiased min-h-screen">
+
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside
+      id="sidebar"
+      class="sidebar fixed lg:static inset-y-0 left-0 z-40 w-64 bg-cream border-r border-light-border flex flex-col lg:translate-x-0"
+      aria-label="Admin navigation"
+    >
+      <div class="p-6 border-b border-light-border">
+        <p class="font-display text-base text-charcoal">Residences</p>
+        <p class="font-serif text-form-label text-mid-gray mt-1 uppercase tracking-widest">Administration</p>
+      </div>
+      <nav class="flex-1 p-4 space-y-1">
+        <button
+          type="button"
+          data-section="bookings"
+          class="sidebar-link is-active w-full text-left px-4 py-3 min-h-[44px] font-sans text-sm text-charcoal"
+        >
+          Bookings
+        </button>
+        <button
+          type="button"
+          data-section="rooms"
+          class="sidebar-link w-full text-left px-4 py-3 min-h-[44px] font-sans text-sm text-charcoal"
+        >
+          Rooms
+        </button>
+      </nav>
+      <div class="p-4 border-t border-light-border">
+        <a href="/" class="font-sans text-form-label text-mid-gray hover:text-charcoal transition-colors duration-[250ms] ease-aman">
+          ← Guest site
+        </a>
+      </div>
+    </aside>
+
+  <div id="sidebar-overlay" class="fixed inset-0 z-30 bg-black/40 hidden lg:hidden" aria-hidden="true"></div>
+
+    <!-- Main -->
+    <div class="flex-1 flex flex-col min-w-0 lg:ml-0">
+      <header class="sticky top-0 z-20 bg-white border-b border-light-border px-4 md:px-8 py-4 flex items-center justify-between gap-4">
+        <button
+          type="button"
+          id="sidebar-toggle"
+          class="lg:hidden min-h-[44px] min-w-[44px] font-display text-xl text-charcoal"
+          aria-label="Toggle menu"
+        >
+          &#9776;
+        </button>
+        <h1 id="page-title" class="font-serif text-h1 text-charcoal">Bookings</h1>
+        <p class="hidden sm:block font-sans text-form-label text-mid-gray">{{ admin_name | default('Property Manager') }}</p>
+      </header>
+
+      <main class="flex-1 p-4 md:p-8 overflow-auto">
+
+        <!-- BOOKINGS SECTION -->
+        <section id="section-bookings" class="admin-section">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <h2 class="font-serif text-h2 text-charcoal">Reservation management</h2>
+            <div class="flex flex-wrap gap-2" role="tablist" aria-label="Filter by status">
+              <button type="button" data-filter="ALL" class="filter-pill is-active px-4 py-2 min-h-[44px] border border-light-border font-sans text-sm text-charcoal">ALL</button>
+              <button type="button" data-filter="PENDING" class="filter-pill px-4 py-2 min-h-[44px] border border-light-border font-sans text-sm text-charcoal">PENDING</button>
+              <button type="button" data-filter="PAID" class="filter-pill px-4 py-2 min-h-[44px] border border-light-border font-sans text-sm text-charcoal">PAID</button>
+              <button type="button" data-filter="CANCELLED" class="filter-pill px-4 py-2 min-h-[44px] border border-light-border font-sans text-sm text-charcoal">CANCELLED</button>
+            </div>
+          </div>
+
+          <div class="border border-light-border bg-white table-scroll overflow-x-auto">
+            <table class="w-full min-w-[800px] text-left border-collapse">
+              <thead>
+                <tr class="border-b border-light-border bg-cream/50">
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">ID</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Guest</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Room</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Check-in</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Check-out</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Total</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Status</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bookings-tbody">
+                <!-- rows -->
+              </tbody>
+            </table>
+            <p id="bookings-empty" class="hidden px-4 py-12 text-center font-sans text-sm text-mid-gray">No bookings match this filter.</p>
+          </div>
+        </section>
+
+        <!-- ROOMS SECTION -->
+        <section id="section-rooms" class="admin-section hidden">
+          <div class="mb-6">
+            <h2 class="font-serif text-h2 text-charcoal mb-2">Room inventory</h2>
+            <p class="font-sans text-sm text-mid-gray">Loaded via availability search for administrative overview.</p>
+          </div>
+
+          <div class="border border-light-border bg-white table-scroll overflow-x-auto">
+            <table class="w-full min-w-[720px] text-left border-collapse">
+              <thead>
+                <tr class="border-b border-light-border bg-cream/50">
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">ID</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Number</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Type</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Capacity</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Price / night</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Status</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="rooms-tbody"></tbody>
+            </table>
+            <p id="rooms-empty" class="hidden px-4 py-12 text-center font-sans text-sm text-mid-gray">No rooms found.</p>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Cancel booking modal -->
+  <div
+    id="cancel-modal"
+    class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+    aria-hidden="true"
+    role="dialog"
+    aria-labelledby="cancel-modal-title"
+  >
+    <div class="modal-panel relative bg-white w-full max-w-[600px] p-8 md:p-10 shadow-[0_4px_12px_rgba(0,0,0,0.15)] pointer-events-auto">
+      <button type="button" id="cancel-modal-close" class="absolute top-4 right-4 min-h-[44px] min-w-[44px] text-charcoal text-2xl" aria-label="Close">&times;</button>
+      <h3 id="cancel-modal-title" class="font-serif text-h2 text-charcoal mb-2">Cancel reservation</h3>
+      <p class="font-sans text-sm text-mid-gray mb-6">Booking <span id="cancel-booking-ref" class="text-charcoal">#—</span></p>
+      <label for="cancel-reason" class="font-serif text-form-label text-charcoal block pb-2">Reason</label>
+      <textarea
+        id="cancel-reason"
+        rows="3"
+        class="form-input w-full bg-white text-black font-sans text-sm px-[7px] py-2 border-0 border-b border-light-border resize-y min-h-[80px]"
+        placeholder="Enter cancellation reason"
+        required
+      ></textarea>
+      <p id="cancel-modal-error" class="hidden mt-3 font-sans text-form-label text-charcoal border border-charcoal px-3 py-2"></p>
+      <div class="mt-8 flex flex-col sm:flex-row gap-3 sm:justify-end">
+        <button type="button" id="cancel-modal-dismiss" class="btn-ghost min-h-[44px] px-4 font-sans text-sm text-charcoal">
+          Dismiss
+        </button>
+        <button
+          type="button"
+          id="cancel-modal-submit"
+          class="btn-primary min-h-[44px] h-[42px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm disabled:opacity-60"
+        >
+          Confirm cancellation
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit room modal -->
+  <div
+    id="edit-modal"
+    class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+    aria-hidden="true"
+    role="dialog"
+    aria-labelledby="edit-modal-title"
+  >
+    <div class="modal-panel relative bg-white w-full max-w-[600px] p-8 md:p-10 shadow-[0_4px_12px_rgba(0,0,0,0.15)] pointer-events-auto max-h-[90vh] overflow-y-auto">
+      <button type="button" id="edit-modal-close" class="absolute top-4 right-4 min-h-[44px] min-w-[44px] text-charcoal text-2xl" aria-label="Close">&times;</button>
+      <h3 id="edit-modal-title" class="font-serif text-h2 text-charcoal mb-6">Edit room</h3>
+      <p class="font-sans text-sm text-mid-gray mb-6">Room <span id="edit-room-ref" class="text-charcoal">—</span></p>
+
+      <form id="edit-room-form" class="space-y-6">
+        <div>
+          <label for="edit-room-type" class="font-serif text-form-label text-charcoal block pb-2">Room type</label>
+          <select id="edit-room-type" name="room_type" required class="form-input w-full bg-white font-sans text-sm px-[7px] py-2 min-h-[44px] border-0 border-b border-light-border">
+            <option value="STANDARD">Standard</option>
+            <option value="DELUXE">Deluxe</option>
+            <option value="SUITE">Suite</option>
+            <option value="VIP">VIP</option>
+          </select>
+        </div>
+        <div>
+          <label for="edit-capacity" class="font-serif text-form-label text-charcoal block pb-2">Capacity</label>
+          <input type="number" id="edit-capacity" name="capacity" min="1" max="20" required class="form-input w-full bg-white font-sans text-sm px-[7px] py-2 min-h-[44px] border-0 border-b border-light-border" />
+        </div>
+        <div>
+          <label for="edit-price" class="font-serif text-form-label text-charcoal block pb-2">Price per night (VND)</label>
+          <input type="number" id="edit-price" name="price_per_night" min="0" step="1000" required class="form-input w-full bg-white font-sans text-sm px-[7px] py-2 min-h-[44px] border-0 border-b border-light-border" />
+        </div>
+        <div>
+          <label for="edit-description" class="font-serif text-form-label text-charcoal block pb-2">Description</label>
+          <textarea id="edit-description" name="description" rows="2" class="form-input w-full bg-white font-sans text-sm px-[7px] py-2 border-0 border-b border-light-border resize-y"></textarea>
+        </div>
+        <div>
+          <label for="edit-status" class="font-serif text-form-label text-charcoal block pb-2">Status</label>
+          <select id="edit-status" name="status" required class="form-input w-full bg-white font-sans text-sm px-[7px] py-2 min-h-[44px] border-0 border-b border-light-border">
+            <option value="AVAILABLE">Available</option>
+            <option value="BOOKED">Booked</option>
+            <option value="MAINTENANCE">Maintenance</option>
+          </select>
+        </div>
+        <p id="edit-modal-error" class="hidden font-sans text-form-label text-charcoal border border-charcoal px-3 py-2"></p>
+        <div class="flex flex-col sm:flex-row gap-3 sm:justify-end pt-2">
+          <button type="button" id="edit-modal-dismiss" class="btn-ghost min-h-[44px] px-4 font-sans text-sm text-charcoal">Dismiss</button>
+          <button type="submit" id="edit-modal-save" class="btn-primary min-h-[44px] h-[42px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm">
+            Save changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-container" class="fixed bottom-6 right-4 md:right-8 z-[70] flex flex-col gap-3 max-w-sm w-full pointer-events-none" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const API_BASE = "{{ api_base_url | default('') }}";
+      const ADMIN_BOOKINGS_PATH = "{{ admin_bookings_path | default('/admin/bookings') }}";
+
+      const BOOKING_COLS = 8;
+      const ROOM_COLS = 7;
+      const SKELETON_ROWS = 6;
+
+      const state = {
+        activeSection: 'bookings',
+        bookingFilter: 'ALL',
+        bookings: [],
+        rooms: [],
+        cancelBookingId: null,
+        editRoomId: null,
+      };
+
+      const els = {
+        sidebar: document.getElementById('sidebar'),
+        sidebarOverlay: document.getElementById('sidebar-overlay'),
+        sidebarToggle: document.getElementById('sidebar-toggle'),
+        pageTitle: document.getElementById('page-title'),
+        sectionBookings: document.getElementById('section-bookings'),
+        sectionRooms: document.getElementById('section-rooms'),
+        bookingsTbody: document.getElementById('bookings-tbody'),
+        bookingsEmpty: document.getElementById('bookings-empty'),
+        roomsTbody: document.getElementById('rooms-tbody'),
+        roomsEmpty: document.getElementById('rooms-empty'),
+        cancelModal: document.getElementById('cancel-modal'),
+        cancelReason: document.getElementById('cancel-reason'),
+        cancelBookingRef: document.getElementById('cancel-booking-ref'),
+        cancelModalError: document.getElementById('cancel-modal-error'),
+        cancelModalSubmit: document.getElementById('cancel-modal-submit'),
+        editModal: document.getElementById('edit-modal'),
+        editRoomForm: document.getElementById('edit-room-form'),
+        editRoomRef: document.getElementById('edit-room-ref'),
+        editModalError: document.getElementById('edit-modal-error'),
+        editRoomType: document.getElementById('edit-room-type'),
+        editCapacity: document.getElementById('edit-capacity'),
+        editPrice: document.getElementById('edit-price'),
+        editDescription: document.getElementById('edit-description'),
+        editStatus: document.getElementById('edit-status'),
+        toastContainer: document.getElementById('toast-container'),
+      };
+
+      function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', {
+          style: 'currency',
+          currency: 'VND',
+          maximumFractionDigits: 0,
+        }).format(Number(amount) || 0);
+      }
+
+      function formatDate(iso) {
+        if (!iso) return '—';
+        const [y, m, d] = String(iso).split('T')[0].split('-').map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString();
+      }
+
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = String(str ?? '');
+        return div.innerHTML;
+      }
+
+      function getBookingId(b) {
+        return b.booking_id ?? b.id;
+      }
+
+      function getDisplayStatus(b) {
+        if (b.status === 'CANCELLED') return 'CANCELLED';
+        if (b.payment_status === 'PAID' || b.status === 'PAID') return 'PAID';
+        return b.status || 'PENDING';
+      }
+
+      function matchesFilter(b, filter) {
+        if (filter === 'ALL') return true;
+        const display = getDisplayStatus(b);
+        if (filter === 'PAID') return display === 'PAID';
+        return display === filter;
+      }
+
+      function showToast(message, isSuccess) {
+        const toast = document.createElement('div');
+        toast.className =
+          'toast pointer-events-auto bg-charcoal text-white px-5 py-4 font-sans text-sm leading-5 shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-charcoal';
+        toast.textContent = message;
+        if (!isSuccess) {
+          toast.classList.add('border-white/30');
+        }
+        els.toastContainer.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('is-visible'));
+        setTimeout(() => {
+          toast.classList.remove('is-visible');
+          setTimeout(() => toast.remove(), 400);
+        }, 4200);
+      }
+
+      function renderSkeletonRows(tbody, colCount) {
+        tbody.innerHTML = '';
+        for (let i = 0; i < SKELETON_ROWS; i++) {
+          const tr = document.createElement('tr');
+          tr.className = 'border-b border-light-border';
+          tr.innerHTML = Array(colCount)
+            .fill('<td class="px-4 py-4"><div class="skeleton h-4 w-full max-w-[120px]"></div></td>')
+            .join('');
+          tbody.appendChild(tr);
+        }
+      }
+
+      function openModal(modalEl) {
+        modalEl.classList.add('is-open');
+        modalEl.classList.remove('pointer-events-none');
+        modalEl.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeModal(modalEl) {
+        modalEl.classList.remove('is-open');
+        modalEl.classList.add('pointer-events-none');
+        modalEl.setAttribute('aria-hidden', 'true');
+        if (!document.querySelector('.modal-backdrop.is-open')) {
+          document.body.style.overflow = '';
+        }
+      }
+
+      function switchSection(section) {
+        state.activeSection = section;
+        document.querySelectorAll('.sidebar-link').forEach((btn) => {
+          btn.classList.toggle('is-active', btn.dataset.section === section);
+        });
+        els.sectionBookings.classList.toggle('hidden', section !== 'bookings');
+        els.sectionRooms.classList.toggle('hidden', section !== 'rooms');
+        els.pageTitle.textContent = section === 'bookings' ? 'Bookings' : 'Rooms';
+        closeSidebarMobile();
+        if (section === 'rooms' && state.rooms.length === 0) {
+          fetchRooms();
+        }
+      }
+
+      function closeSidebarMobile() {
+        els.sidebar.classList.remove('is-open');
+        els.sidebarOverlay.classList.add('hidden');
+      }
+
+      function renderBookingsTable() {
+        const filtered = state.bookings.filter((b) =>
+          matchesFilter(b, state.bookingFilter)
+        );
+
+        els.bookingsTbody.innerHTML = '';
+
+        if (filtered.length === 0) {
+          els.bookingsEmpty.classList.remove('hidden');
+          return;
+        }
+
+        els.bookingsEmpty.classList.add('hidden');
+
+        filtered.forEach((b) => {
+          const id = getBookingId(b);
+          const guest =
+            b.customer?.full_name ||
+            b.guest_name ||
+            `User #${b.user_id ?? '—'}`;
+          const roomLabel = b.room
+            ? `${b.room.room_number || ''} (${b.room.room_type || ''})`
+            : `Room #${b.room_id ?? '—'}`;
+          const displayStatus = getDisplayStatus(b);
+          const canCancel = b.status !== 'CANCELLED';
+
+          const tr = document.createElement('tr');
+          tr.className = 'border-b border-light-border hover:bg-cream/30 transition-colors duration-[250ms] ease-aman';
+          tr.dataset.bookingId = String(id);
+          tr.innerHTML = `
+            <td class="px-4 py-3 font-sans text-sm text-charcoal">#${escapeHtml(id)}</td>
+            <td class="px-4 py-3 font-sans text-sm text-charcoal">${escapeHtml(guest)}</td>
+            <td class="px-4 py-3 font-sans text-sm text-charcoal">${escapeHtml(roomLabel)}</td>
+            <td class="px-4 py-3 font-sans text-sm text-charcoal">${escapeHtml(formatDate(b.check_in))}</td>
+            <td class="px-4 py-3 font-sans text-sm text-charcoal">${escapeHtml(formatDate(b.check_out))}</td>
+            <td class="px-4 py-3 font-sans text-sm text-charcoal">${escapeHtml(formatCurrency(b.total_price))}</td>
+            <td class="px-4 py-3 font-sans text-sm">
+              <span class="status-cell font-sans text-form-label uppercase tracking-wide text-charcoal border border-light-border px-2 py-1 inline-block">${escapeHtml(displayStatus)}</span>
+            </td>
+            <td class="px-4 py-3 font-sans text-sm">
+              ${
+                canCancel
+                  ? `<button type="button" class="btn-cancel btn-ghost text-sm text-charcoal min-h-[44px] px-2" data-booking-id="${escapeHtml(id)}">Cancel</button>`
+                  : '<span class="text-mid-gray text-form-label">—</span>'
+              }
+            </td>
+          `;
+          els.bookingsTbody.appendChild(tr);
+        });
+
+        els.bookingsTbody.querySelectorAll('.btn-cancel').forEach((btn) => {
+          btn.addEventListener('click', () => openCancelModal(btn.dataset.bookingId));
+        });
+      }
+
+      function updateBookingRow(bookingId, updates) {
+        const idx = state.bookings.findIndex(
+          (b) => String(getBookingId(b)) === String(bookingId)
+        );
+        if (idx >= 0) {
+          state.bookings[idx] = { ...state.bookings[idx], ...updates };
+        }
+        const tr = els.bookingsTbody.querySelector(
+          `tr[data-booking-id="${bookingId}"]`
+        );
+        if (tr) {
+          const statusCell = tr.querySelector('.status-cell');
+          if (statusCell) {
+            statusCell.textContent = updates.status || 'CANCELLED';
+          }
+          const actionsCell = tr.cells[tr.cells.length - 1];
+          if (actionsCell) {
+            actionsCell.innerHTML =
+              '<span class="text-mid-gray text-form-label">—</span>';
+          }
+        }
+      }
+
+      async function fetchBookings() {
+        renderSkeletonRows(els.bookingsTbody, BOOKING_COLS);
+        els.bookingsEmpty.classList.add('hidden');
+
+        const urls = [
+          `${API_BASE}${ADMIN_BOOKINGS_PATH}`,
+          `${API_BASE}/bookings`,
+        ];
+
+        let lastError = null;
+
+        for (const url of urls) {
+          try {
+            const response = await fetch(url, {
+              headers: { Accept: 'application/json' },
+            });
+            let payload = null;
+            try {
+              payload = await response.json();
+            } catch {
+              payload = null;
+            }
+
+            if (!response.ok) {
+              lastError = new Error(payload?.message || `HTTP ${response.status}`);
+              continue;
+            }
+
+            const list = Array.isArray(payload?.data)
+              ? payload.data
+              : Array.isArray(payload)
+                ? payload
+                : [];
+
+            state.bookings = list;
+            renderBookingsTable();
+            return;
+          } catch (err) {
+            lastError = err;
+          }
+        }
+
+        els.bookingsTbody.innerHTML = '';
+        els.bookingsEmpty.classList.remove('hidden');
+        els.bookingsEmpty.textContent =
+          lastError?.message ||
+          'Could not load bookings. Ensure GET /admin/bookings or GET /bookings is available.';
+        showToast('Failed to load bookings.', false);
+      }
+
+      function searchDateRange() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const end = new Date(today);
+        end.setDate(end.getDate() + 90);
+        const fmt = (d) => {
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${y}-${m}-${day}`;
+        };
+        return { check_in: fmt(today), check_out: fmt(end), guests: '1' };
+      }
+
+      async function fetchRooms() {
+        renderSkeletonRows(els.roomsTbody, ROOM_COLS);
+        els.roomsEmpty.classList.add('hidden');
+
+        const { check_in, check_out, guests } = searchDateRange();
+        const url = `${API_BASE}/rooms/search?${new URLSearchParams({ check_in, check_out, guests }).toString()}`;
+
+        try {
+          const response = await fetch(url, {
+            headers: { Accept: 'application/json' },
+          });
+          let payload = null;
+          try {
+            payload = await response.json();
+          } catch {
+            payload = null;
+          }
+
+          if (!response.ok) {
+            throw new Error(payload?.message || `HTTP ${response.status}`);
+          }
+
+          state.rooms = Array.isArray(payload?.data)
+            ? payload.data
+            : Array.isArray(payload)
+              ? payload
+              : [];
+
+          renderRoomsTable();
+        } catch (err) {
+          els.roomsTbody.innerHTML = '';
+          els.roomsEmpty.classList.remove('hidden');
+          els.roomsEmpty.textContent =
+            err instanceof Error ? err.message : 'Could not load rooms.';
+          showToast('Failed to load rooms.', false);
+        }
+      }
+
+      function renderRoomsTable() {
+        els.roomsTbody.innerHTML = '';
+
+        if (state.rooms.length === 0) {
+          els.roomsEmpty.classList.remove('hidden');
+          return;
+        }
+
+        els.roomsEmpty.classList.add('hidden');
+
+        state.rooms.forEach((room) => {
+          const tr = document.createElement('tr');
+          tr.className = 'border-b border-light-border hover:bg-cream/30 transition-colors duration-[250ms] ease-aman';
+          tr.dataset.roomId = String(room.id);
+          tr.innerHTML = `
+            <td class="px-4 py-3 font-sans text-sm">${escapeHtml(room.id)}</td>
+            <td class="px-4 py-3 font-sans text-sm room-number-cell">${escapeHtml(room.room_number || '—')}</td>
+            <td class="px-4 py-3 font-sans text-sm room-type-cell">${escapeHtml(room.room_type || '—')}</td>
+            <td class="px-4 py-3 font-sans text-sm room-capacity-cell">${escapeHtml(room.capacity ?? '—')}</td>
+            <td class="px-4 py-3 font-sans text-sm room-price-cell">${escapeHtml(formatCurrency(room.price_per_night))}</td>
+            <td class="px-4 py-3 font-sans text-sm room-status-cell">
+              <span class="font-sans text-form-label uppercase tracking-wide border border-light-border px-2 py-1 inline-block">${escapeHtml(room.status || '—')}</span>
+            </td>
+            <td class="px-4 py-3 font-sans text-sm">
+              <button type="button" class="btn-edit btn-ghost text-sm min-h-[44px] px-2" data-room-id="${escapeHtml(room.id)}">Edit</button>
+            </td>
+          `;
+          els.roomsTbody.appendChild(tr);
+        });
+
+        els.roomsTbody.querySelectorAll('.btn-edit').forEach((btn) => {
+          btn.addEventListener('click', () => openEditModal(btn.dataset.roomId));
+        });
+      }
+
+      function updateRoomRow(room) {
+        const idx = state.rooms.findIndex((r) => String(r.id) === String(room.id));
+        if (idx >= 0) state.rooms[idx] = { ...state.rooms[idx], ...room };
+
+        const tr = els.roomsTbody.querySelector(`tr[data-room-id="${room.id}"]`);
+        if (!tr) return;
+
+        const set = (sel, val) => {
+          const el = tr.querySelector(sel);
+          if (el) el.textContent = val;
+        };
+        set('.room-type-cell', room.room_type || '—');
+        set('.room-capacity-cell', room.capacity ?? '—');
+        set('.room-price-cell', formatCurrency(room.price_per_night));
+        const statusEl = tr.querySelector('.room-status-cell span');
+        if (statusEl) statusEl.textContent = room.status || '—';
+      }
+
+      function openCancelModal(bookingId) {
+        state.cancelBookingId = bookingId;
+        els.cancelBookingRef.textContent = `#${bookingId}`;
+        els.cancelReason.value = '';
+        els.cancelModalError.classList.add('hidden');
+        openModal(els.cancelModal);
+        els.cancelReason.focus();
+      }
+
+      async function submitCancel() {
+        const reason = els.cancelReason.value.trim();
+        if (!reason) {
+          els.cancelModalError.textContent = 'Please provide a cancellation reason.';
+          els.cancelModalError.classList.remove('hidden');
+          return;
+        }
+
+        els.cancelModalError.classList.add('hidden');
+        els.cancelModalSubmit.disabled = true;
+
+        try {
+          const response = await fetch(
+            `${API_BASE}/bookings/${encodeURIComponent(state.cancelBookingId)}/cancel`,
+            {
+              method: 'PATCH',
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ reason }),
+            }
+          );
+
+          let payload = null;
+          try {
+            payload = await response.json();
+          } catch {
+            payload = null;
+          }
+
+          if (!response.ok || payload?.success === false) {
+            throw new Error(
+              payload?.message || `Cancellation failed (${response.status}).`
+            );
+          }
+
+          const data = payload?.data ?? {};
+          updateBookingRow(state.cancelBookingId, {
+            status: 'CANCELLED',
+            cancel_reason: data.cancel_reason || reason,
+          });
+
+          closeModal(els.cancelModal);
+          showToast('Reservation cancelled successfully.', true);
+        } catch (err) {
+          els.cancelModalError.textContent =
+            err instanceof Error ? err.message : 'Cancellation failed.';
+          els.cancelModalError.classList.remove('hidden');
+          showToast(
+            err instanceof Error ? err.message : 'Cancellation failed.',
+            false
+          );
+        } finally {
+          els.cancelModalSubmit.disabled = false;
+        }
+      }
+
+      async function openEditModal(roomId) {
+        state.editRoomId = roomId;
+        const room = state.rooms.find((r) => String(r.id) === String(roomId));
+        els.editRoomRef.textContent = room?.room_number || `#${roomId}`;
+        els.editModalError.classList.add('hidden');
+
+        if (room) {
+          populateEditForm(room);
+          openModal(els.editModal);
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_BASE}/rooms/${roomId}`, {
+            headers: { Accept: 'application/json' },
+          });
+          const payload = await response.json();
+          const detail = payload?.data ?? payload;
+          populateEditForm(detail);
+          openModal(els.editModal);
+        } catch {
+          showToast('Could not load room details.', false);
+        }
+      }
+
+      function populateEditForm(room) {
+        els.editRoomType.value = room.room_type || 'STANDARD';
+        els.editCapacity.value = room.capacity ?? 1;
+        els.editPrice.value = room.price_per_night ?? 0;
+        els.editDescription.value = room.description || '';
+        els.editStatus.value = room.status || 'AVAILABLE';
+      }
+
+      async function submitEditRoom(e) {
+        e.preventDefault();
+        els.editModalError.classList.add('hidden');
+        els.editModalSave.disabled = true;
+
+        const body = {
+          room_type: els.editRoomType.value,
+          capacity: Number(els.editCapacity.value),
+          price_per_night: Number(els.editPrice.value),
+          description: els.editDescription.value.trim() || undefined,
+          status: els.editStatus.value,
+        };
+
+        try {
+          const response = await fetch(
+            `${API_BASE}/admin/rooms/${encodeURIComponent(state.editRoomId)}`,
+            {
+              method: 'PUT',
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(body),
+            }
+          );
+
+          let payload = null;
+          try {
+            payload = await response.json();
+          } catch {
+            payload = null;
+          }
+
+          if (!response.ok || payload?.success === false) {
+            throw new Error(
+              payload?.message || `Update failed (${response.status}).`
+            );
+          }
+
+          const updated = payload?.data ?? { ...body, id: state.editRoomId };
+          updateRoomRow(updated);
+          closeModal(els.editModal);
+          showToast('Room updated successfully.', true);
+        } catch (err) {
+          els.editModalError.textContent =
+            err instanceof Error ? err.message : 'Update failed.';
+          els.editModalError.classList.remove('hidden');
+          showToast(
+            err instanceof Error ? err.message : 'Room update failed.',
+            false
+          );
+        } finally {
+          els.editModalSave.disabled = false;
+        }
+      }
+
+      function bindEvents() {
+        document.querySelectorAll('.sidebar-link').forEach((btn) => {
+          btn.addEventListener('click', () => switchSection(btn.dataset.section));
+        });
+
+        document.querySelectorAll('.filter-pill').forEach((pill) => {
+          pill.addEventListener('click', () => {
+            state.bookingFilter = pill.dataset.filter;
+            document.querySelectorAll('.filter-pill').forEach((p) => {
+              p.classList.toggle('is-active', p === pill);
+            });
+            renderBookingsTable();
+          });
+        });
+
+        els.sidebarToggle.addEventListener('click', () => {
+          els.sidebar.classList.toggle('is-open');
+          els.sidebarOverlay.classList.toggle('hidden');
+        });
+        els.sidebarOverlay.addEventListener('click', closeSidebarMobile);
+
+        els.cancelModalClose.addEventListener('click', () => closeModal(els.cancelModal));
+        els.cancelModalDismiss.addEventListener('click', () => closeModal(els.cancelModal));
+        els.cancelModalSubmit.addEventListener('click', submitCancel);
+
+        els.editModalClose.addEventListener('click', () => closeModal(els.editModal));
+        els.editModalDismiss.addEventListener('click', () => closeModal(els.editModal));
+        els.editRoomForm.addEventListener('submit', submitEditRoom);
+
+        [els.cancelModal, els.editModal].forEach((modal) => {
+          modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal(modal);
+          });
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            closeModal(els.cancelModal);
+            closeModal(els.editModal);
+          }
+        });
+      }
+
+      function init() {
+        bindEvents();
+        fetchBookings();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

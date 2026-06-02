@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Residences — Reservation Confirmed</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            charcoal: '#313131',
+            cream: '#F3EEE7',
+            'mid-gray': '#82847F',
+            'light-border': '#DBDBDB',
+            'dark-gray': '#55565B',
+            accent: '#007DFA',
+            gold: '#ACCEF0',
+          },
+          fontFamily: {
+            display: ['"Lyon Display Web"', 'Georgia', 'serif'],
+            serif: ['"Lyon Text Web"', 'Georgia', 'serif'],
+            sans: ['WhitneySSm', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+          },
+          transitionTimingFunction: {
+            aman: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          },
+          fontSize: {
+            'display-hero': ['40px', { lineHeight: '58px' }],
+            h3: ['20px', { lineHeight: '28px' }],
+            'form-label': ['10px', { lineHeight: '14px' }],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      --ease-aman: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --charcoal: #313131;
+      --cream: #f3eee7;
+    }
+
+    * { border-radius: 0 !important; }
+
+    .skeleton {
+      background: linear-gradient(90deg, #dbdbdb 0%, #f3eee7 50%, #dbdbdb 100%);
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.2s ease-in-out infinite;
+    }
+
+    @keyframes skeleton-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .btn-primary {
+      transition: background-color 250ms var(--ease-aman),
+        color 250ms var(--ease-aman),
+        transform 150ms var(--ease-aman);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: #000;
+      color: #fff;
+    }
+
+    .btn-primary:active:not(:disabled) {
+      transform: scale(0.98);
+      background-color: #55565b;
+    }
+
+    .fade-rise {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 800ms var(--ease-aman), transform 800ms var(--ease-aman);
+    }
+
+    .fade-rise.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .fade-out-panel {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 800ms var(--ease-aman), transform 800ms var(--ease-aman);
+    }
+
+    .fade-out-panel.is-hidden {
+      opacity: 0;
+      transform: translateY(-20px);
+      pointer-events: none;
+      position: absolute;
+      width: 100%;
+      visibility: hidden;
+    }
+
+    .payment-success-panel {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 800ms var(--ease-aman), transform 800ms var(--ease-aman);
+    }
+
+    .payment-success-panel.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .payment-option {
+      transition: border-color 250ms var(--ease-aman),
+        background-color 250ms var(--ease-aman);
+    }
+
+    .payment-option:has(input:checked) {
+      border-color: var(--charcoal);
+      background-color: #fff;
+    }
+
+    .payment-option input {
+      accent-color: var(--charcoal);
+    }
+
+    .status-badge {
+      letter-spacing: 0.08em;
+    }
+
+    .inline-alert {
+      border: 1px solid #000;
+      transition: opacity 400ms var(--ease-aman);
+    }
+
+    .hero-serene::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+    }
+  </style>
+</head>
+<body class="bg-white text-charcoal font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- Subtle hero backdrop -->
+  <div class="fixed inset-0 -z-10 hero-serene" aria-hidden="true">
+    <img
+      src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=2400&q=80"
+      alt=""
+      class="w-full h-full object-cover"
+      width="2400"
+      height="1400"
+    />
+  </div>
+
+  <header class="relative z-10 bg-white/95 backdrop-blur-sm border-b border-light-border">
+    <div class="mx-auto max-w-[600px] px-4 md:px-6 py-4 flex items-center justify-between">
+      <a href="/" class="font-display text-sm text-charcoal hover:text-black transition-colors duration-[250ms] ease-aman">
+        Residences
+      </a>
+      <p class="font-serif text-form-label text-mid-gray tracking-wide">Step 3 of 3</p>
+    </div>
+  </header>
+
+  <main class="relative z-10 flex-1 flex flex-col items-center justify-center px-4 md:px-6 py-10 md:py-16">
+    <div class="w-full max-w-[600px]">
+
+      <!-- Loading -->
+      <div id="state-loading" aria-live="polite" aria-busy="true">
+        <div class="skeleton h-12 w-3/4 max-w-sm mx-auto mb-10"></div>
+        <div class="bg-cream p-8 md:p-10 space-y-6">
+          <div class="skeleton h-4 w-32"></div>
+          <div class="skeleton h-8 w-full"></div>
+          <div class="skeleton h-4 w-5/6"></div>
+          <div class="skeleton h-4 w-2/3"></div>
+          <div class="skeleton h-px w-full my-4"></div>
+          <div class="skeleton h-10 w-full"></div>
+          <div class="skeleton h-[42px] w-40"></div>
+        </div>
+      </div>
+
+      <!-- Load error -->
+      <div id="state-error" class="hidden text-center" role="alert">
+        <h1 class="font-display text-display-hero text-charcoal mb-6">Reservation</h1>
+        <p id="load-error-message" class="font-sans text-sm text-charcoal mb-8 leading-5"></p>
+        <a
+          href="/"
+          class="btn-primary inline-flex items-center justify-center min-h-[44px] h-[42px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm"
+        >
+          Return home
+        </a>
+      </div>
+
+      <!-- Main confirm content -->
+      <div id="state-content" class="hidden">
+        <h1 class="fade-rise font-display text-display-hero text-[28px] md:text-[40px] leading-tight md:leading-[58px] text-charcoal text-center mb-8 md:mb-10">
+          Reservation Confirmed
+        </h1>
+
+        <p class="fade-rise text-center font-serif text-form-label text-mid-gray mb-2" style="transition-delay: 100ms">
+          Reference
+        </p>
+        <p id="booking-reference" class="fade-rise text-center font-display text-h3 text-charcoal mb-10 md:mb-12" style="transition-delay: 150ms">
+          —
+        </p>
+
+        <div class="relative">
+          <!-- Order summary card -->
+          <article
+            id="summary-card"
+            class="fade-rise bg-cream p-8 md:p-10 shadow-[0_4px_12px_rgba(0,0,0,0.15)] mb-8"
+            style="transition-delay: 200ms"
+            aria-label="Reservation summary"
+          >
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-8 pb-6 border-b border-light-border">
+              <span class="font-serif text-form-label text-mid-gray uppercase tracking-widest">Your stay</span>
+              <span id="status-badge" class="status-badge font-sans text-form-label text-charcoal border border-charcoal px-3 py-1">
+                Status: —
+              </span>
+            </div>
+
+            <dl id="summary-details" class="space-y-4 font-sans text-sm text-charcoal">
+              <!-- populated by JS -->
+            </dl>
+
+            <div class="mt-8 pt-6 border-t border-light-border flex justify-between items-baseline gap-4">
+              <span class="font-serif text-form-label text-charcoal">Total</span>
+              <span id="summary-total" class="font-serif text-h3 text-charcoal">—</span>
+            </div>
+          </article>
+
+          <!-- Payment section -->
+          <div id="payment-wrapper" class="relative min-h-[200px]">
+            <section
+              id="payment-panel"
+              class="fade-out-panel bg-white p-8 md:p-10 border border-light-border"
+              aria-label="Complete payment"
+            >
+              <h2 class="font-serif text-h3 text-charcoal mb-2">Complete payment</h2>
+              <p class="font-sans text-sm text-mid-gray mb-8 leading-5">
+                Select your preferred method to finalize your reservation.
+              </p>
+
+              <div
+                id="payment-alert"
+                class="hidden inline-alert text-charcoal px-4 py-3 mb-6 font-sans text-sm"
+                role="alert"
+              ></div>
+
+              <fieldset class="space-y-0 border-0 p-0 m-0 mb-8">
+                <legend class="sr-only">Payment method</legend>
+                <label class="payment-option flex items-center gap-4 min-h-[44px] px-4 py-4 border border-light-border border-b-0 cursor-pointer">
+                  <input type="radio" name="pay_method" value="MOMO" class="w-4 h-4" />
+                  <span class="font-sans text-sm text-charcoal">MoMo</span>
+                </label>
+                <label class="payment-option flex items-center gap-4 min-h-[44px] px-4 py-4 border border-light-border border-b-0 cursor-pointer">
+                  <input type="radio" name="pay_method" value="ZALOPAY" class="w-4 h-4" />
+                  <span class="font-sans text-sm text-charcoal">ZaloPay</span>
+                </label>
+                <label class="payment-option flex items-center gap-4 min-h-[44px] px-4 py-4 border border-light-border cursor-pointer">
+                  <input type="radio" name="pay_method" value="BANKING" class="w-4 h-4" />
+                  <span class="font-sans text-sm text-charcoal">Bank transfer</span>
+                </label>
+              </fieldset>
+
+              <button
+                type="button"
+                id="complete-payment-btn"
+                class="btn-primary w-full inline-flex items-center justify-center min-h-[44px] h-[42px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm disabled:bg-light-border disabled:text-mid-gray disabled:border-light-border"
+              >
+                <span id="pay-btn-label">Complete Payment</span>
+                <span id="pay-btn-loading" class="hidden items-center gap-2">
+                  <span class="inline-block w-4 h-4 skeleton" aria-hidden="true"></span>
+                  Processing…
+                </span>
+              </button>
+
+              <div class="mt-8 flex flex-col sm:flex-row gap-4 sm:gap-8 justify-center">
+                <a
+                  href="/"
+                  class="font-sans text-sm text-charcoal text-center underline decoration-charcoal underline-offset-4 hover:text-black transition-colors duration-[250ms] ease-aman min-h-[44px] inline-flex items-center justify-center"
+                >
+                  Return home
+                </a>
+                <button
+                  type="button"
+                  id="manage-reservation-btn"
+                  class="font-sans text-sm text-charcoal text-center underline decoration-charcoal underline-offset-4 hover:text-black min-h-[44px]"
+                >
+                  Manage reservation
+                </button>
+              </div>
+            </section>
+
+            <!-- Success panel -->
+            <section
+              id="success-panel"
+              class="payment-success-panel bg-cream p-8 md:p-10 text-center"
+              aria-label="Payment successful"
+              aria-hidden="true"
+            >
+              <p class="font-serif text-form-label text-mid-gray uppercase tracking-widest mb-4">Payment</p>
+              <h2 class="font-display text-h3 text-charcoal mb-6">Payment Successful</h2>
+              <p id="success-message" class="font-sans text-sm text-charcoal mb-8 leading-5 max-w-sm mx-auto"></p>
+
+              <div id="qr-container" class="mx-auto mb-6 bg-white p-6 inline-block border border-light-border">
+                <canvas id="qr-canvas" width="180" height="180" aria-label="Payment QR code"></canvas>
+              </div>
+
+              <p id="payment-redirect-hint" class="font-sans text-form-label text-mid-gray mb-6"></p>
+
+              <a
+                id="payment-deep-link"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-primary inline-flex items-center justify-center min-h-[44px] h-[42px] px-8 border border-charcoal bg-charcoal text-cream font-sans text-sm mb-8"
+              >
+                Open payment app
+              </a>
+
+              <p class="font-sans text-form-label text-mid-gray">
+                Transaction: <span id="txn-ref" class="text-charcoal">—</span>
+              </p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="relative z-10 border-t border-light-border bg-white/95 py-8 mt-auto">
+    <p class="text-center font-sans text-form-label text-mid-gray">
+      &copy; {{ current_year | default(2026) }} Residences
+    </p>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const API_BASE = "{{ api_base_url | default('') }}";
+      const STORAGE_KEY = 'hotel_booking_confirmation';
+
+      const PAYMENT_LINKS = {
+        MOMO: 'https://payment.momo.vn/mock/',
+        ZALOPAY: 'https://zalopay.vn/mock/',
+        BANKING: 'https://banking.mock/transfer/',
+      };
+
+      const state = {
+        bookingId: null,
+        booking: null,
+        cachedStorage: null,
+      };
+
+      const els = {
+        stateLoading: document.getElementById('state-loading'),
+        stateError: document.getElementById('state-error'),
+        stateContent: document.getElementById('state-content'),
+        loadErrorMessage: document.getElementById('load-error-message'),
+        bookingReference: document.getElementById('booking-reference'),
+        statusBadge: document.getElementById('status-badge'),
+        summaryDetails: document.getElementById('summary-details'),
+        summaryTotal: document.getElementById('summary-total'),
+        paymentPanel: document.getElementById('payment-panel'),
+        successPanel: document.getElementById('success-panel'),
+        paymentAlert: document.getElementById('payment-alert'),
+        completePaymentBtn: document.getElementById('complete-payment-btn'),
+        payBtnLabel: document.getElementById('pay-btn-label'),
+        payBtnLoading: document.getElementById('pay-btn-loading'),
+        successMessage: document.getElementById('success-message'),
+        paymentRedirectHint: document.getElementById('payment-redirect-hint'),
+        paymentDeepLink: document.getElementById('payment-deep-link'),
+        txnRef: document.getElementById('txn-ref'),
+        qrCanvas: document.getElementById('qr-canvas'),
+        manageReservationBtn: document.getElementById('manage-reservation-btn'),
+      };
+
+      function readStoredBooking() {
+        try {
+          const raw =
+            sessionStorage.getItem(STORAGE_KEY) || localStorage.getItem(STORAGE_KEY);
+          return raw ? JSON.parse(raw) : null;
+        } catch {
+          return null;
+        }
+      }
+
+      function resolveBookingId() {
+        const q = new URLSearchParams(window.location.search).get('booking_id');
+        if (q) return q;
+        const stored = readStoredBooking();
+        state.cachedStorage = stored;
+        return stored?.booking_id ?? stored?.id ?? null;
+      }
+
+      function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', {
+          style: 'currency',
+          currency: 'VND',
+          maximumFractionDigits: 0,
+        }).format(amount || 0);
+      }
+
+      function formatDisplayDate(iso) {
+        if (!iso) return '—';
+        const [y, m, d] = iso.split('-').map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        });
+      }
+
+      function formatRoomType(type) {
+        if (!type) return 'Residence';
+        return type.charAt(0) + type.slice(1).toLowerCase().replace(/_/g, ' ');
+      }
+
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = String(str ?? '');
+        return div.innerHTML;
+      }
+
+      function showPageState(s) {
+        els.stateLoading.classList.toggle('hidden', s !== 'loading');
+        els.stateError.classList.toggle('hidden', s !== 'error');
+        els.stateContent.classList.toggle('hidden', s !== 'content');
+      }
+
+      function updateStatusBadge(booking) {
+        const status = booking.status || 'PENDING';
+        const paymentStatus = booking.payment_status || '';
+        let label = `Status: ${status}`;
+        if (paymentStatus === 'PAID' || status === 'PAID') {
+          label = 'Status: PAID';
+        } else if (paymentStatus === 'UNPAID') {
+          label = `Status: ${status} · Unpaid`;
+        }
+        els.statusBadge.textContent = label;
+      }
+
+      function renderSummary(booking) {
+        const ref = booking.booking_id ?? booking.id ?? state.bookingId;
+        els.bookingReference.textContent = `#${ref}`;
+
+        const room = booking.room || state.cachedStorage?.room || {};
+        const customer = booking.customer || {};
+        const roomLabel = room.room_number
+          ? `${formatRoomType(room.room_type)} · ${room.room_number}`
+          : formatRoomType(room.room_type);
+
+        const rows = [
+          ['Guest', customer.full_name || '—'],
+          ['Email', customer.email || '—'],
+          ['Residence', roomLabel],
+          ['Check-in', formatDisplayDate(booking.check_in)],
+          ['Check-out', formatDisplayDate(booking.check_out)],
+          [
+            'Nights',
+            booking.total_nights != null
+              ? String(booking.total_nights)
+              : '—',
+          ],
+        ];
+
+        els.summaryDetails.innerHTML = rows
+          .map(
+            ([dt, dd]) => `
+          <div class="flex justify-between gap-4">
+            <dt class="text-mid-gray shrink-0">${escapeHtml(dt)}</dt>
+            <dd class="text-right">${escapeHtml(dd)}</dd>
+          </div>`
+          )
+          .join('');
+
+        els.summaryTotal.textContent = formatCurrency(booking.total_price);
+        updateStatusBadge(booking);
+      }
+
+      function preselectPaymentMethod() {
+        const method =
+          state.cachedStorage?.payment_method ||
+          state.booking?.payment_method;
+        if (!method) return;
+        const radio = document.querySelector(
+          `input[name="pay_method"][value="${method}"]`
+        );
+        if (radio) radio.checked = true;
+      }
+
+      function isAlreadyPaid(booking) {
+        return (
+          booking.payment_status === 'PAID' ||
+          booking.status === 'PAID' ||
+          booking.status === 'CONFIRMED'
+        );
+      }
+
+      function revealContent() {
+        requestAnimationFrame(() => {
+          document.querySelectorAll('.fade-rise').forEach((el) => {
+            el.classList.add('is-visible');
+          });
+        });
+      }
+
+      function showPaymentSuccess(paymentData, method) {
+        els.paymentPanel.classList.add('is-hidden');
+        els.successPanel.classList.add('is-visible');
+        els.successPanel.setAttribute('aria-hidden', 'false');
+
+        const txn =
+          paymentData.transaction_ref || `MOCK_TXN_2026_${Date.now()}`;
+        els.txnRef.textContent = txn;
+        els.successMessage.textContent =
+          `Your payment via ${method === 'BANKING' ? 'bank transfer' : method} has been recorded. Present this code to complete verification.`;
+
+        const linkBase = PAYMENT_LINKS[method] || PAYMENT_LINKS.MOMO;
+        els.paymentDeepLink.href = `${linkBase}${state.bookingId}?ref=${encodeURIComponent(txn)}`;
+        els.paymentRedirectHint.textContent =
+          method === 'BANKING'
+            ? 'Use the link below for transfer instructions.'
+            : 'Scan the code or open your wallet app to verify.';
+
+        drawMockQr(txn, method);
+        updateStatusBadge({ ...state.booking, status: 'PAID', payment_status: 'PAID' });
+      }
+
+      function drawMockQr(txnRef, method) {
+        const canvas = els.qrCanvas;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const size = 180;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+
+        const seed = (txnRef + method).split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+        const cell = 9;
+        const cols = Math.floor(size / cell);
+
+        ctx.fillStyle = '#313131';
+        for (let y = 0; y < cols; y++) {
+          for (let x = 0; x < cols; x++) {
+            const hash = (x * 17 + y * 31 + seed) % 7;
+            if (hash > 2) {
+              ctx.fillRect(x * cell, y * cell, cell - 1, cell - 1);
+            }
+          }
+        }
+
+        /* finder patterns */
+        [[0, 0], [cols - 7, 0], [0, cols - 7]].forEach(([ox, oy]) => {
+          ctx.fillStyle = '#313131';
+          ctx.fillRect(ox * cell, oy * cell, 7 * cell, 7 * cell);
+          ctx.fillStyle = '#f3eee7';
+          ctx.fillRect((ox + 1) * cell, (oy + 1) * cell, 5 * cell, 5 * cell);
+          ctx.fillStyle = '#313131';
+          ctx.fillRect((ox + 2) * cell, (oy + 2) * cell, 3 * cell, 3 * cell);
+        });
+      }
+
+      function hidePaymentAlert() {
+        els.paymentAlert.classList.add('hidden');
+        els.paymentAlert.textContent = '';
+      }
+
+      function showPaymentAlert(msg) {
+        els.paymentAlert.textContent = msg;
+        els.paymentAlert.classList.remove('hidden');
+      }
+
+      function setPaySubmitting(loading) {
+        els.completePaymentBtn.disabled = loading;
+        els.payBtnLabel.classList.toggle('hidden', loading);
+        els.payBtnLoading.classList.toggle('hidden', !loading);
+        els.payBtnLoading.classList.toggle('inline-flex', loading);
+      }
+
+      async function fetchBooking(bookingId) {
+        showPageState('loading');
+        const url = `${API_BASE}/bookings/${encodeURIComponent(bookingId)}`;
+
+        try {
+          const response = await fetch(url, {
+            headers: { Accept: 'application/json' },
+          });
+
+          let payload = null;
+          try {
+            payload = await response.json();
+          } catch {
+            payload = null;
+          }
+
+          if (!response.ok) {
+            throw new Error(
+              payload?.message || `Unable to load reservation (${response.status}).`
+            );
+          }
+
+          if (payload?.success === false) {
+            throw new Error(payload.message || 'Reservation not found.');
+          }
+
+          const booking = payload?.data ?? payload;
+          if (!booking) throw new Error('Invalid reservation data.');
+
+          state.booking = booking;
+          renderSummary(booking);
+          preselectPaymentMethod();
+
+          if (isAlreadyPaid(booking)) {
+            els.paymentPanel.classList.add('is-hidden');
+            const method =
+              booking.payment_method ||
+              state.cachedStorage?.payment_method ||
+              'MOMO';
+            showPaymentSuccess(
+              { transaction_ref: `MOCK_TXN_2026_${bookingId}` },
+              method
+            );
+          }
+
+          showPageState('content');
+          revealContent();
+        } catch (err) {
+          if (state.cachedStorage?.booking_id) {
+            state.booking = {
+              booking_id: state.cachedStorage.booking_id,
+              check_in: state.cachedStorage.check_in,
+              check_out: state.cachedStorage.check_out,
+              total_nights: state.cachedStorage.total_nights,
+              total_price: state.cachedStorage.total_price,
+              status: state.cachedStorage.status || 'PENDING',
+              payment_status: 'UNPAID',
+              room: state.cachedStorage.room,
+              customer: {},
+            };
+            renderSummary(state.booking);
+            preselectPaymentMethod();
+            showPageState('content');
+            revealContent();
+            showPaymentAlert(
+              'Live reservation details could not be loaded. Summary shown from your session.'
+            );
+            return;
+          }
+
+          els.loadErrorMessage.textContent =
+            err instanceof Error ? err.message : 'An unexpected error occurred.';
+          showPageState('error');
+        }
+      }
+
+      async function completePayment() {
+        hidePaymentAlert();
+
+        const selected = document.querySelector('input[name="pay_method"]:checked');
+        if (!selected) {
+          showPaymentAlert('Please select a payment method.');
+          return;
+        }
+
+        const method = selected.value;
+        const amount = Number(state.booking?.total_price);
+        if (!amount || amount <= 0) {
+          showPaymentAlert('Invalid payment amount.');
+          return;
+        }
+
+        const transactionRef = `MOCK_TXN_2026_${state.bookingId}_${Date.now()}`;
+        const body = {
+          amount,
+          payment_method: method,
+          transaction_ref: transactionRef,
+        };
+
+        setPaySubmitting(true);
+
+        try {
+          const response = await fetch(
+            `${API_BASE}/bookings/${encodeURIComponent(state.bookingId)}/payment`,
+            {
+              method: 'POST',
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(body),
+            }
+          );
+
+          let payload = null;
+          try {
+            payload = await response.json();
+          } catch {
+            payload = null;
+          }
+
+          if (!response.ok || payload?.success === false) {
+            showPaymentAlert(
+              payload?.message ||
+                `Payment could not be completed (${response.status}).`
+            );
+            return;
+          }
+
+          const data = payload?.data ?? payload;
+          els.paymentPanel.classList.add('is-hidden');
+
+          setTimeout(() => {
+            showPaymentSuccess(data, method);
+            if (state.booking) {
+              state.booking.status = 'PAID';
+              state.booking.payment_status = 'PAID';
+            }
+          }, 400);
+        } catch {
+          showPaymentAlert(
+            'A network error occurred. Please check your connection and try again.'
+          );
+        } finally {
+          setPaySubmitting(false);
+        }
+      }
+
+      function init() {
+        state.bookingId = resolveBookingId();
+        state.cachedStorage = readStoredBooking();
+
+        els.manageReservationBtn.addEventListener('click', () => {
+          window.location.href = `/?ref=${encodeURIComponent(state.bookingId || '')}`;
+        });
+
+        els.completePaymentBtn.addEventListener('click', completePayment);
+
+        if (!state.bookingId) {
+          els.loadErrorMessage.textContent =
+            'No reservation reference found. Please complete a booking first.';
+          showPageState('error');
+          return;
+        }
+
+        fetchBooking(state.bookingId);
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

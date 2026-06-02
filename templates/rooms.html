@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Residences — Available Rooms</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            charcoal: '#313131',
+            cream: '#F3EEE7',
+            'mid-gray': '#82847F',
+            'light-border': '#DBDBDB',
+            'dark-gray': '#55565B',
+            accent: '#007DFA',
+            gold: '#ACCEF0',
+          },
+          fontFamily: {
+            display: ['"Lyon Display Web"', 'Georgia', 'serif'],
+            serif: ['"Lyon Text Web"', 'Georgia', 'serif'],
+            sans: ['WhitneySSm', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+          },
+          transitionTimingFunction: {
+            aman: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          },
+          maxWidth: {
+            content: '1440px',
+          },
+          fontSize: {
+            h2: ['31px', { lineHeight: '45px' }],
+            h3: ['20px', { lineHeight: '28px' }],
+            'form-label': ['10px', { lineHeight: '14px' }],
+          },
+          spacing: {
+            13: '52px',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      --ease-aman: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --charcoal: #313131;
+      --cream: #f3eee7;
+    }
+
+    * { border-radius: 0 !important; }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 800ms var(--ease-aman), transform 800ms var(--ease-aman);
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, #dbdbdb 0%, #f3eee7 50%, #dbdbdb 100%);
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.2s ease-in-out infinite;
+    }
+
+    @keyframes skeleton-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .btn-primary {
+      transition: background-color 250ms var(--ease-aman),
+        color 250ms var(--ease-aman),
+        transform 150ms var(--ease-aman);
+    }
+
+    .btn-primary:hover {
+      background-color: #000;
+      color: #fff;
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+      background-color: #55565b;
+    }
+
+    .nav-link {
+      transition: color 250ms var(--ease-aman);
+    }
+
+    .nav-link:hover {
+      color: #000;
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 4px;
+    }
+
+    .room-image-wrap {
+      transition: transform 800ms var(--ease-aman);
+    }
+
+    .room-card:hover .room-image-wrap img {
+      transform: scale(1.02);
+    }
+
+    .room-image-wrap img {
+      transition: transform 800ms var(--ease-aman);
+    }
+
+    .lightbox {
+      transition: opacity 400ms var(--ease-aman), transform 400ms var(--ease-aman);
+    }
+
+    .lightbox.is-open {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .lightbox.is-closed {
+      opacity: 0;
+      transform: translateY(-10px);
+      pointer-events: none;
+    }
+
+    .page-blur.is-blurred {
+      filter: blur(4px);
+      transition: filter 400ms var(--ease-aman);
+    }
+  </style>
+</head>
+<body class="bg-white text-charcoal font-sans antialiased page-blur" id="page-root">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-30 bg-white border-b border-light-border">
+    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10">
+      <div class="flex items-center justify-between py-4 md:py-5">
+        <a href="/" class="font-display text-sm md:text-base text-charcoal nav-link no-underline">Residences</a>
+        <a
+          href="/"
+          class="font-sans text-sm text-charcoal underline decoration-charcoal underline-offset-4 hover:text-black transition-colors duration-[250ms] ease-aman min-h-[44px] inline-flex items-center"
+        >
+          Modify search
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Search summary -->
+  <section class="bg-cream border-b border-light-border" aria-label="Search criteria">
+    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10 py-8 md:py-10 reveal">
+      <p class="font-serif text-form-label text-mid-gray uppercase tracking-widest mb-3">Your journey</p>
+      <h1 class="font-serif text-h2 text-charcoal mb-4">Available residences</h1>
+      <p id="search-summary" class="font-sans text-sm md:text-base text-charcoal leading-5 md:leading-6">
+        <!-- populated by JS -->
+      </p>
+    </div>
+  </section>
+
+  <main class="mx-auto max-w-content w-full" id="rooms-main">
+
+    <!-- Missing params -->
+    <div id="state-params" class="hidden px-4 md:px-6 lg:px-10 py-13 md:py-20" role="alert">
+      <p class="font-sans text-base text-charcoal mb-6 max-w-[600px]">
+        Please provide check-in, check-out, and guest count to search for available rooms.
+      </p>
+      <a
+        href="/"
+        class="btn-primary inline-flex items-center justify-center min-h-[44px] h-[42px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm"
+      >
+        Return home
+      </a>
+    </div>
+
+    <!-- Loading -->
+    <div id="state-loading" class="hidden" aria-live="polite" aria-busy="true">
+      <p class="sr-only">Loading available rooms</p>
+      <div class="space-y-0">
+        {% for _ in range(2) %}
+        <article class="border-b border-light-border">
+          <div class="skeleton w-full aspect-[16/10] md:aspect-[21/9]"></div>
+          <div class="px-4 md:px-6 lg:px-10 py-8 md:py-10 space-y-4">
+            <div class="skeleton h-8 w-2/3 max-w-md"></div>
+            <div class="skeleton h-4 w-full max-w-lg"></div>
+            <div class="skeleton h-4 w-1/2 max-w-xs"></div>
+            <div class="skeleton h-[42px] w-32 mt-4"></div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div id="state-error" class="hidden px-4 md:px-6 lg:px-10 py-13 md:py-20" role="alert">
+      <p class="font-serif text-h3 text-charcoal mb-3">Unable to load residences</p>
+      <p id="error-message" class="font-sans text-sm text-charcoal mb-8 max-w-[600px] leading-5"></p>
+      <button
+        type="button"
+        id="retry-btn"
+        class="btn-primary inline-flex items-center justify-center min-h-[44px] h-[42px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm mr-4"
+      >
+        Try again
+      </button>
+      <a
+        href="/"
+        class="font-sans text-sm text-charcoal underline decoration-charcoal underline-offset-4 hover:text-black min-h-[44px] inline-flex items-center"
+      >
+        Modify search
+      </a>
+    </div>
+
+    <!-- Empty -->
+    <div id="state-empty" class="hidden px-4 md:px-6 lg:px-10 py-13 md:py-20 text-center md:text-left">
+      <p class="font-serif text-h3 text-charcoal mb-4">No residences available</p>
+      <p class="font-sans text-sm text-mid-gray mb-8 max-w-[600px] mx-auto md:mx-0 leading-5">
+        We could not find availability for your selected dates. Please adjust your stay or contact us for assistance.
+      </p>
+      <a
+        href="/"
+        class="btn-primary inline-flex items-center justify-center min-h-[44px] h-[42px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm"
+      >
+        Modify search
+      </a>
+    </div>
+
+    <!-- Room list: single column, edge-to-edge imagery -->
+    <div id="rooms-list" class="hidden" role="list"></div>
+
+  </main>
+
+  <footer class="border-t border-light-border py-10 mt-13">
+    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10 flex flex-col md:flex-row justify-between gap-4">
+      <p class="font-display text-sm text-charcoal">Residences</p>
+      <p class="font-sans text-form-label text-mid-gray">&copy; {{ current_year | default(2026) }} All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Lightbox -->
+  <div
+    id="lightbox"
+    class="fixed inset-0 z-[60] lightbox is-closed flex items-center justify-center bg-black/90 p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Room image gallery"
+    aria-hidden="true"
+  >
+    <button
+      type="button"
+      id="lightbox-close"
+      class="absolute top-4 right-4 md:top-8 md:right-8 min-h-[44px] min-w-[44px] text-cream font-display text-3xl leading-none z-10"
+      aria-label="Close gallery"
+    >
+      &times;
+    </button>
+    <img
+      id="lightbox-image"
+      src=""
+      alt=""
+      class="max-w-full max-h-[85vh] object-contain"
+    />
+    <p id="lightbox-caption" class="absolute bottom-6 left-0 right-0 text-center font-serif text-sm text-cream/90 px-4"></p>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const API_BASE = "{{ api_base_url | default('') }}";
+      const ROOM_DETAIL_PATH = "{{ room_detail_path | default('/rooms') }}";
+
+      const ROOM_IMAGES = {
+        DELUXE: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=2400&q=80',
+        SUITE: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=2400&q=80',
+        STANDARD: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=2400&q=80',
+        DEFAULT: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=2400&q=80',
+      };
+
+      const els = {
+        searchSummary: document.getElementById('search-summary'),
+        stateParams: document.getElementById('state-params'),
+        stateLoading: document.getElementById('state-loading'),
+        stateError: document.getElementById('state-error'),
+        stateEmpty: document.getElementById('state-empty'),
+        errorMessage: document.getElementById('error-message'),
+        retryBtn: document.getElementById('retry-btn'),
+        roomsList: document.getElementById('rooms-list'),
+        lightbox: document.getElementById('lightbox'),
+        lightboxImage: document.getElementById('lightbox-image'),
+        lightboxCaption: document.getElementById('lightbox-caption'),
+        lightboxClose: document.getElementById('lightbox-close'),
+        pageRoot: document.getElementById('page-root'),
+      };
+
+      let searchParams = {};
+
+      function parseQuery() {
+        const q = new URLSearchParams(window.location.search);
+        return {
+          check_in: q.get('check_in') || '',
+          check_out: q.get('check_out') || '',
+          guests: q.get('guests') || '',
+        };
+      }
+
+      function parseISO(str) {
+        const [y, m, d] = str.split('-').map(Number);
+        return new Date(y, m - 1, d);
+      }
+
+      function formatDisplayDate(iso) {
+        return parseISO(iso).toLocaleDateString(undefined, {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        });
+      }
+
+      function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', {
+          style: 'currency',
+          currency: 'VND',
+          maximumFractionDigits: 0,
+        }).format(amount);
+      }
+
+      function formatRoomType(type) {
+        if (!type) return 'Residence';
+        return type.charAt(0) + type.slice(1).toLowerCase().replace(/_/g, ' ');
+      }
+
+      function validateSearchParams(params) {
+        const { check_in, check_out, guests } = params;
+        if (!check_in || !check_out || !guests) return false;
+        const guestNum = Number(guests);
+        if (!Number.isInteger(guestNum) || guestNum < 1) return false;
+        const inDate = parseISO(check_in);
+        const outDate = parseISO(check_out);
+        if (Number.isNaN(inDate.getTime()) || Number.isNaN(outDate.getTime())) return false;
+        if (outDate <= inDate) return false;
+        return true;
+      }
+
+      function updateSearchSummary() {
+        const { check_in, check_out, guests } = searchParams;
+        const nights = Math.round((parseISO(check_out) - parseISO(check_in)) / 86400000);
+        const guestLabel = Number(guests) === 1 ? '1 guest' : `${guests} guests`;
+        els.searchSummary.textContent =
+          `${formatDisplayDate(check_in)} — ${formatDisplayDate(check_out)} · ${nights} night${nights !== 1 ? 's' : ''} · ${guestLabel}`;
+      }
+
+      function showState(state) {
+        const states = ['params', 'loading', 'error', 'empty', 'list'];
+        states.forEach((s) => {
+          const el =
+            s === 'list'
+              ? els.roomsList
+              : document.getElementById(`state-${s}`);
+          if (!el) return;
+          el.classList.toggle('hidden', s !== state);
+        });
+        els.roomsList.classList.toggle('hidden', state !== 'list');
+        if (state === 'loading') {
+          els.stateLoading.setAttribute('aria-busy', 'true');
+        } else {
+          els.stateLoading.removeAttribute('aria-busy');
+        }
+      }
+
+      function getRoomImage(room) {
+        const type = (room.room_type || '').toUpperCase();
+        return ROOM_IMAGES[type] || ROOM_IMAGES.DEFAULT;
+      }
+
+      function buildDetailUrl(roomId) {
+        const q = new URLSearchParams({
+          check_in: searchParams.check_in,
+          check_out: searchParams.check_out,
+          guests: searchParams.guests,
+        });
+        const base = ROOM_DETAIL_PATH.replace(/\/$/, '');
+        return `${base}/${roomId}?${q.toString()}`;
+      }
+
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      function renderRoomCard(room, index) {
+        const imageUrl = getRoomImage(room);
+        const roomTitle = `${formatRoomType(room.room_type)} · ${room.room_number || ''}`.trim();
+        const specs = [
+          room.capacity ? `Up to ${room.capacity} guests` : null,
+          room.total_nights
+            ? `${room.total_nights} night${room.total_nights !== 1 ? 's' : ''}`
+            : null,
+          room.status === 'AVAILABLE' ? 'Available' : room.status,
+        ]
+          .filter(Boolean)
+          .join(' · ');
+
+        const pricePerNight = room.price_per_night
+          ? `${formatCurrency(room.price_per_night)} / night`
+          : '';
+        const totalPrice = room.estimated_total_price
+          ? `Estimated total ${formatCurrency(room.estimated_total_price)}`
+          : '';
+
+        const article = document.createElement('article');
+        article.className = 'room-card reveal border-b border-light-border';
+        article.setAttribute('role', 'listitem');
+        article.style.transitionDelay = `${Math.min(index, 5) * 100}ms`;
+        article.innerHTML = `
+          <button
+            type="button"
+            class="room-image-trigger block w-full text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-charcoal"
+            data-image="${escapeHtml(imageUrl)}"
+            data-caption="${escapeHtml(roomTitle)}"
+            aria-label="View larger image of ${escapeHtml(roomTitle)}"
+          >
+            <div class="room-image-wrap w-full overflow-hidden aspect-[4/3] md:aspect-[21/9]">
+              <img
+                src="${escapeHtml(imageUrl)}"
+                alt="${escapeHtml(roomTitle)}"
+                class="w-full h-full object-cover"
+                loading="${index < 2 ? 'eager' : 'lazy'}"
+                width="2400"
+                height="1200"
+              />
+            </div>
+          </button>
+          <div class="px-4 md:px-6 lg:px-10 py-10 md:py-12 lg:py-13 max-w-[900px]">
+            <h2 class="font-serif text-h2 text-charcoal mb-4">${escapeHtml(roomTitle)}</h2>
+            <p class="font-sans text-sm md:text-base text-charcoal leading-5 md:leading-6 mb-6">
+              ${escapeHtml(specs)}
+            </p>
+            <div class="mb-8 space-y-1">
+              ${pricePerNight ? `<p class="font-sans text-sm text-charcoal">${escapeHtml(pricePerNight)}</p>` : ''}
+              ${totalPrice ? `<p class="font-serif text-h3 text-charcoal">${escapeHtml(totalPrice)}</p>` : ''}
+            </div>
+            <a
+              href="${escapeHtml(buildDetailUrl(room.id))}"
+              class="btn-primary inline-flex items-center justify-center min-h-[44px] h-[42px] px-[15px] py-[10px] border border-charcoal bg-charcoal text-cream font-sans text-sm leading-5"
+            >
+              Select
+            </a>
+          </div>
+        `;
+        return article;
+      }
+
+      function initReveal(container) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.08, rootMargin: '0px 0px -32px 0px' }
+        );
+        container.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+      }
+
+      function openLightbox(src, caption) {
+        els.lightboxImage.src = src;
+        els.lightboxImage.alt = caption;
+        els.lightboxCaption.textContent = caption;
+        els.lightbox.classList.remove('is-closed');
+        els.lightbox.classList.add('is-open');
+        els.lightbox.setAttribute('aria-hidden', 'false');
+        els.pageRoot.classList.add('is-blurred');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeLightbox() {
+        els.lightbox.classList.add('is-closed');
+        els.lightbox.classList.remove('is-open');
+        els.lightbox.setAttribute('aria-hidden', 'true');
+        els.pageRoot.classList.remove('is-blurred');
+        document.body.style.overflow = '';
+      }
+
+      function bindLightboxTriggers() {
+        els.roomsList.querySelectorAll('.room-image-trigger').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            openLightbox(btn.dataset.image, btn.dataset.caption);
+          });
+        });
+      }
+
+      async function fetchRooms() {
+        showState('loading');
+
+        const query = new URLSearchParams({
+          check_in: searchParams.check_in,
+          check_out: searchParams.check_out,
+          guests: searchParams.guests,
+        });
+
+        const url = `${API_BASE}/rooms/search?${query.toString()}`;
+
+        try {
+          const response = await fetch(url, {
+            method: 'GET',
+            headers: { Accept: 'application/json' },
+          });
+
+          let payload = null;
+          try {
+            payload = await response.json();
+          } catch {
+            payload = null;
+          }
+
+          if (!response.ok) {
+            const msg =
+              payload?.message ||
+              `Request failed (${response.status}). Please try again.`;
+            throw new Error(msg);
+          }
+
+          if (payload && payload.success === false) {
+            throw new Error(payload.message || 'Unable to load rooms.');
+          }
+
+          const rooms = Array.isArray(payload?.data)
+            ? payload.data
+            : Array.isArray(payload)
+              ? payload
+              : [];
+
+          els.roomsList.innerHTML = '';
+
+          if (rooms.length === 0) {
+            showState('empty');
+            return;
+          }
+
+          rooms.forEach((room, index) => {
+            els.roomsList.appendChild(renderRoomCard(room, index));
+          });
+
+          bindLightboxTriggers();
+          initReveal(els.roomsList);
+          showState('list');
+        } catch (err) {
+          els.errorMessage.textContent =
+            err instanceof Error ? err.message : 'An unexpected error occurred.';
+          showState('error');
+        }
+      }
+
+      function init() {
+        searchParams = parseQuery();
+
+        document.querySelectorAll('.reveal').forEach((el) => {
+          if (!el.closest('#rooms-list')) el.classList.add('is-visible');
+        });
+
+        if (!validateSearchParams(searchParams)) {
+          showState('params');
+          els.searchSummary.textContent = 'Search criteria incomplete.';
+          return;
+        }
+
+        updateSearchSummary();
+        fetchRooms();
+      }
+
+      els.retryBtn.addEventListener('click', fetchRooms);
+      els.lightboxClose.addEventListener('click', closeLightbox);
+      els.lightbox.addEventListener('click', (e) => {
+        if (e.target === els.lightbox) closeLightbox();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeLightbox();
+      });
+
+      init();
+    })();
+  </script>
+</body>
+</html>
