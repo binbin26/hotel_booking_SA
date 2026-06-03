@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
@@ -13,7 +15,7 @@ router = APIRouter(prefix="/rooms", tags=["rooms"])
 async def get_room_detail(
     room_id: int,
     room_service: RoomService = Depends(get_room_service),
-):
+) -> dict[str, Any] | JSONResponse:
     """Public endpoint: room detail with images."""
     try:
         room = await room_service.get_room_detail(room_id)
