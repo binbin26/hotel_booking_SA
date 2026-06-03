@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from app.database import AsyncSessionLocal, engine  # noqa: E402
-from app.models import Room, User  # noqa: E402
+from app.models import Room, RoomImage, User  # noqa: E402
 from app.models.room import RoomStatus, RoomType  # noqa: E402
 from app.models.user import UserRole  # noqa: E402
 
@@ -58,6 +58,49 @@ USERS_SEED: list[dict] = [
 ]
 
 
+ROOM_IMAGES_SEED: dict[str, list[dict]] = {
+    "A101": [
+        {
+            "image_url": "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1600&q=80",
+            "is_primary": True,
+        },
+        {
+            "image_url": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1600&q=80",
+            "is_primary": False,
+        },
+    ],
+    "B201": [
+        {
+            "image_url": "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1600&q=80",
+            "is_primary": True,
+        },
+    ],
+}
+
+
+async def seed_room_images(session) -> int:
+    """Insert sample images for seeded rooms (by room_number). Returns count inserted."""
+    inserted = 0
+    for room_number, images in ROOM_IMAGES_SEED.items():
+        room_id = await session.scalar(
+            select(Room.id).where(Room.room_number == room_number)
+        )
+        if room_id is None:
+            continue
+        for image in images:
+            exists = await session.scalar(
+                select(RoomImage.id).where(
+                    RoomImage.room_id == room_id,
+                    RoomImage.image_url == image["image_url"],
+                )
+            )
+            if exists:
+                continue
+            session.add(RoomImage(room_id=room_id, **image))
+            inserted += 1
+    return inserted
+
+
 async def seed_rooms(session) -> int:
     """Insert rooms that do not yet exist (by room_number). Returns count inserted."""
     inserted = 0
@@ -97,9 +140,10 @@ async def main() -> None:
     async with AsyncSessionLocal() as session:
         await seed_rooms(session)
         await seed_users(session)
+        await seed_room_images(session)
         await session.commit()
 
-    print("✓ Seeded 15 rooms, 2 users")
+    print("✓ Seeded 15 rooms, 2 users, sample room images")
     await engine.dispose()
 
 

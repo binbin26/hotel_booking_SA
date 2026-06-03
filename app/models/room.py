@@ -10,6 +10,7 @@ from app.models.base import Base
 
 if TYPE_CHECKING:
     from app.models.booking import Booking
+    from app.models.room_image import RoomImage
 
 
 class RoomType(str, enum.Enum):
@@ -51,4 +52,9 @@ class Room(Base):
     bookings: Mapped[List["Booking"]] = relationship(
         "Booking",
         back_populates="room",
+    )
+    images: Mapped[List["RoomImage"]] = relationship(
+        "RoomImage",
+        back_populates="room",
+        lazy="selectin",
     )
