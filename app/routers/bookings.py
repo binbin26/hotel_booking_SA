@@ -5,11 +5,16 @@ from fastapi.responses import JSONResponse
 
 from app.dependencies.auth import get_current_user
 from app.dependencies.booking import get_booking_service
+from app.dependencies.payment import get_payment_service
 from app.exceptions.booking_exceptions import (
     BookingAlreadyCancelledException,
     BookingNotFoundException,
     RoomNotAvailableException,
     RoomNotFoundException,
+)
+from app.exceptions.payment_exceptions import (
+    PaymentAlreadyPaidException,
+    PaymentAmountMismatchException,
 )
 from app.models.user import User, UserRole
 from app.schemas.booking_schema import (
@@ -19,7 +24,9 @@ from app.schemas.booking_schema import (
     BookingDetailResponse,
     BookingResponse,
 )
+from app.schemas.payment_schema import PaymentCreate, PaymentResponse
 from app.services.booking_service import BookingService
+from app.services.payment_service import PaymentService
 
 router = APIRouter(prefix="/bookings", tags=["bookings"])
 
@@ -135,6 +142,56 @@ async def create_booking(
         "success": True,
         "message": "Booking created successfully",
         "data": BookingResponse.model_validate(booking).model_dump(mode="json"),
+    }
+
+
+@router.post("/{booking_id}/payment", response_model=None)
+async def process_payment(
+    booking_id: int,
+    body: PaymentCreate,
+    payment_service: PaymentService = Depends(get_payment_service),
+    current_user: User = Depends(get_current_user),
+) -> dict[str, Any] | JSONResponse:
+    """JWT endpoint: record a payment for a booking."""
+    try:
+        payment = await payment_service.process_payment(
+            booking_id=booking_id,
+            amount=body.amount,
+            payment_method=body.payment_method,
+            transaction_ref=body.transaction_ref,
+        )
+    except BookingNotFoundException:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "success": False,
+                "message": "Booking not found",
+                "error_code": "BOOKING_NOT_FOUND",
+            },
+        )
+    except PaymentAlreadyPaidException:
+        return JSONResponse(
+            status_code=409,
+            content={
+                "success": False,
+                "message": "Booking is already paid",
+                "error_code": "PAYMENT_ALREADY_PAID",
+            },
+        )
+    except PaymentAmountMismatchException as e:
+        return JSONResponse(
+            status_code=400,
+            content={
+                "success": False,
+                "message": f"Payment amount mismatch: expected {e.expected}, received {e.received}",
+                "error_code": "PAYMENT_AMOUNT_MISMATCH",
+            },
+        )
+
+    return {
+        "success": True,
+        "message": "Payment recorded successfully",
+        "data": PaymentResponse.model_validate(payment).model_dump(mode="json"),
     }
 
 

@@ -71,13 +71,14 @@ class BookingRepository(BaseRepository[Booking]):
         )
 
     async def get_booking_by_id(self, booking_id: int) -> Booking | None:
-        """Fetch one booking by id with customer and room eager-loaded."""
+        """Fetch one booking by id with customer, room, and payments eager-loaded."""
         stmt = (
             select(Booking)
             .where(Booking.id == booking_id)
             .options(
                 selectinload(Booking.user),
                 selectinload(Booking.room),
+                selectinload(Booking.payments),
             )
         )
         result = await self._session.execute(stmt)

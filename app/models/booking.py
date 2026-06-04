@@ -9,6 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
 
 if TYPE_CHECKING:
+    from app.models.payment import Payment
     from app.models.room import Room
     from app.models.user import User
 
@@ -65,3 +66,4 @@ class Booking(Base):
 
     user: Mapped["User"] = relationship("User", back_populates="bookings")
     room: Mapped["Room"] = relationship("Room", back_populates="bookings")
+    payments: Mapped[list["Payment"]] = relationship("Payment", back_populates="booking")
