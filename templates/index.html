@@ -1,10 +1,21 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="{{ current_locale | default('en') }}" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Residences — Hotel Booking</title>
+  <title>{{ _("Residences — Hotel Booking") }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Nhắm mục tiêu cực mạnh vào toàn bộ các thẻ chứa text */
+    body, html, div, span, p, a, h1, h2, h3, h4, h5, h6, li, td, button, input {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif !important;
+        letter-spacing: 0px !important;
+        text-transform: none !important; /* Tắt viết hoa tự động của template để tránh vỡ dấu kép */
+        font-variant: normal !important;
+        font-kerning: none !important;
+    }
+</style>
+  <script src="app/utils/fix_font.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -74,6 +85,19 @@
 
     .reveal-delay-1 { transition-delay: 100ms; }
     .reveal-delay-2 { transition-delay: 200ms; }
+    .reveal-delay-3 { transition-delay: 300ms; }
+
+    .destination-card img {
+      transition: transform 800ms var(--ease-aman);
+    }
+
+    .destination-card:hover img {
+      transform: scale(1.03);
+    }
+
+    #header-top-bar {
+      transition: background-color 250ms var(--ease-aman), color 250ms var(--ease-aman);
+    }
 
     .skeleton {
       background: linear-gradient(
@@ -158,23 +182,38 @@
     }
   </style>
 </head>
-<body class="bg-white text-charcoal font-sans antialiased page-blur" id="page-root">
+<body class="bg-white text-charcoal font-sans antialiased" id="page-root">
+  <!-- ✅ FIX: Wrap page content in its own div so blur only affects this,
+       NOT the calendar overlay or mobile drawer which sit outside this wrapper -->
+  <div id="page-content" class="page-blur">
 
   <!-- Header -->
   <header
     id="site-header"
     class="absolute top-0 left-0 right-0 z-30 transition-colors duration-[250ms] ease-aman"
   >
+    <div
+      id="header-top-bar"
+      class="hidden md:block border-b border-cream/20 bg-black/30 text-cream"
+    >
+      <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10">
+        <div class="flex items-center justify-end gap-6 py-2 font-sans text-form-label tracking-wide">
+          <a href="tel:0372863000" class="nav-link !text-cream/90 hover:!text-white no-underline">0372863***</a>
+          <span class="text-cream/40" aria-hidden="true">|</span>
+          <a href="mailto:admin@gmail.com" class="nav-link !text-cream/90 hover:!text-white no-underline">admin@gmail.com</a>
+        </div>
+      </div>
+    </div>
     <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10">
       <div class="flex items-center justify-between py-4 md:py-5">
         <a href="/" class="font-display text-sm md:text-base text-cream nav-link !text-cream hover:!text-white no-underline">
-          Residences
+          {{ _("Residences") }}
         </a>
 
         <nav class="hidden md:flex items-center gap-4 lg:gap-8 font-display text-sm text-cream">
-          <a href="#destinations" class="nav-link !text-cream hover:!text-white">Destinations</a>
-          <a href="#experiences" class="nav-link !text-cream hover:!text-white">Experiences</a>
-          <a href="#about" class="nav-link !text-cream hover:!text-white">About</a>
+          <a href="#destinations" class="nav-link !text-cream hover:!text-white">{{ _("Destinations") }}</a>
+          <a href="#experiences" class="nav-link !text-cream hover:!text-white">{{ _("Experiences") }}</a>
+          <a href="#about" class="nav-link !text-cream hover:!text-white">{{ _("About") }}</a>
         </nav>
 
         <div class="flex items-center gap-3">
@@ -182,7 +221,7 @@
             type="button"
             id="menu-toggle"
             class="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center text-cream font-display text-xl"
-            aria-label="Open menu"
+            aria-label="{{ _('Open menu') }}"
             aria-expanded="false"
           >
             &#9776;
@@ -191,37 +230,19 @@
             href="#booking-bar"
             class="hidden sm:inline-flex btn-primary items-center justify-center h-[42px] min-h-[44px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm leading-5"
           >
-            Reserve
+            {{ _("Reserve") }}
           </a>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- Mobile drawer -->
-  <div
-    id="mobile-drawer"
-    class="fixed inset-0 z-50 calendar-overlay is-closed md:hidden"
-    aria-hidden="true"
-  >
-    <div class="absolute inset-0 bg-black/50" id="drawer-backdrop"></div>
-    <nav class="absolute top-0 right-0 h-full w-[min(100%,320px)] bg-white p-8 flex flex-col gap-6 font-display text-base">
-      <button type="button" id="drawer-close" class="self-end min-h-[44px] min-w-[44px] text-charcoal" aria-label="Close menu">&times;</button>
-      <a href="#destinations" class="nav-link min-h-[44px] flex items-center drawer-link">Destinations</a>
-      <a href="#experiences" class="nav-link min-h-[44px] flex items-center drawer-link">Experiences</a>
-      <a href="#about" class="nav-link min-h-[44px] flex items-center drawer-link">About</a>
-      <a href="#booking-bar" class="btn-primary mt-4 inline-flex items-center justify-center h-[44px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm drawer-link">
-        Reserve
-      </a>
-    </nav>
-  </div>
-
   <!-- Hero -->
   <section class="relative min-h-[100svh] flex flex-col justify-end overflow-hidden" aria-label="Hero">
     <div class="absolute inset-0">
       <img
         src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2400&q=80"
-        alt="Serene resort pool at dusk"
+        alt="{{ _('Serene resort pool at dusk') }}"
         class="w-full h-full object-cover hero-ken-burns"
         width="2400"
         height="1600"
@@ -232,13 +253,13 @@
 
     <div class="relative z-10 mx-auto max-w-content w-full px-4 md:px-6 lg:px-10 pb-36 md:pb-44 lg:pb-52 pt-28">
       <p class="reveal font-serif text-form-label text-cream/90 uppercase tracking-widest mb-4">
-        A sanctuary of calm
+        {{ _("A sanctuary of calm") }}
       </p>
       <h1 class="reveal reveal-delay-1 font-display text-display-hero md:text-[40px] text-[28px] md:leading-[58px] leading-[38px] text-cream max-w-3xl">
-        Where stillness becomes the journey
+        {{ _("Where stillness becomes the journey") }}
       </h1>
       <p class="reveal reveal-delay-2 mt-6 font-sans text-sm md:text-base text-cream/90 max-w-xl leading-5 md:leading-6">
-        Discover refined residences immersed in nature. Begin your stay with dates that honor unhurried time.
+        {{ _("Discover refined residences immersed in nature. Begin your stay with dates that honor unhurried time.") }}
       </p>
     </div>
   </section>
@@ -247,16 +268,16 @@
   <section
     id="booking-bar"
     class="relative z-20 -mt-20 md:-mt-24 mx-auto max-w-content w-full px-4 md:px-6 lg:px-10"
-    aria-label="Search availability"
+    aria-label="{{ _('Search availability') }}"
   >
     <div class="bg-cream p-6 md:p-8 lg:p-10 shadow-[0_4px_12px_rgba(0,0,0,0.15)] reveal">
-      <h2 class="font-serif text-h3 text-charcoal mb-6 md:mb-8">Plan your stay</h2>
+      <h2 class="font-serif text-h3 text-charcoal mb-6 md:mb-8">{{ _("Plan your stay") }}</h2>
 
       <form id="booking-search-form" class="space-y-6" novalidate>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           <!-- Check-in -->
           <div class="flex flex-col">
-            <label for="check_in" class="font-serif text-form-label text-charcoal pb-1">Check-in</label>
+            <label for="check_in" class="font-serif text-form-label text-charcoal pb-1">{{ _("Check-in") }}</label>
             <button
               type="button"
               id="check_in_trigger"
@@ -264,7 +285,7 @@
               aria-haspopup="dialog"
               aria-controls="calendar-overlay"
             >
-              <span id="check_in_display" class="text-mid-gray">Select date</span>
+              <span id="check_in_display" class="text-mid-gray">{{ _("Select date") }}</span>
             </button>
             <input type="hidden" id="check_in" name="check_in" required />
             <p id="check_in_error" class="hidden mt-2 font-sans text-form-label text-charcoal" role="alert"></p>
@@ -272,7 +293,7 @@
 
           <!-- Check-out -->
           <div class="flex flex-col">
-            <label for="check_out" class="font-serif text-form-label text-charcoal pb-1">Check-out</label>
+            <label for="check_out" class="font-serif text-form-label text-charcoal pb-1">{{ _("Check-out") }}</label>
             <button
               type="button"
               id="check_out_trigger"
@@ -280,7 +301,7 @@
               aria-haspopup="dialog"
               aria-controls="calendar-overlay"
             >
-              <span id="check_out_display" class="text-mid-gray">Select date</span>
+              <span id="check_out_display" class="text-mid-gray">{{ _("Select date") }}</span>
             </button>
             <input type="hidden" id="check_out" name="check_out" required />
             <p id="check_out_error" class="hidden mt-2 font-sans text-form-label text-charcoal" role="alert"></p>
@@ -288,16 +309,16 @@
 
           <!-- Guests -->
           <div class="flex flex-col sm:col-span-2 lg:col-span-1">
-            <label for="guests" class="font-serif text-form-label text-charcoal pb-1">Guests</label>
+            <label for="guests" class="font-serif text-form-label text-charcoal pb-1">{{ _("Guests") }}</label>
             <select
               id="guests"
               name="guests"
               class="input-focus-line bg-white text-black font-sans text-base leading-[18px] px-[7px] py-2 min-h-[44px] md:min-h-[36px] border-0 border-b border-light-border w-full appearance-none cursor-pointer"
               required
             >
-              <option value="" disabled selected>Select guests</option>
+              <option value="" disabled selected>{{ _("Select guests") }}</option>
               {% for n in range(1, 9) %}
-              <option value="{{ n }}">{{ n }} {% if n == 1 %}Guest{% else %}Guests{% endif %}</option>
+              <option value="{{ n }}">{{ n }} {% if n == 1 %}{{ _("Guest") }}{% else %}{{ _("Guests") }}{% endif %}</option>
               {% endfor %}
             </select>
             <p id="guests_error" class="hidden mt-2 font-sans text-form-label text-charcoal" role="alert"></p>
@@ -310,10 +331,10 @@
               id="search-submit"
               class="btn-primary w-full inline-flex items-center justify-center min-h-[44px] h-[42px] px-[15px] py-[10px] border border-charcoal bg-charcoal text-cream font-sans text-sm leading-5 disabled:bg-light-border disabled:text-mid-gray disabled:border-light-border disabled:cursor-not-allowed"
             >
-              <span id="search-submit-label">Search availability</span>
+              <span id="search-submit-label">{{ _("Search availability") }}</span>
               <span id="search-submit-loading" class="hidden items-center gap-2">
                 <span class="inline-block w-4 h-4 skeleton rounded-search" aria-hidden="true"></span>
-                Searching…
+                {{ _("Searching…") }}
               </span>
             </button>
           </div>
@@ -324,47 +345,173 @@
     </div>
   </section>
 
-  <!-- Intro sections -->
+  <!-- Destinations -->
   <section id="destinations" class="mx-auto max-w-content px-4 md:px-6 lg:px-10 py-13 md:py-20 lg:py-[52px]">
-    <div class="reveal max-w-[600px]">
-      <h2 class="font-serif text-h2 text-charcoal mb-6">Destinations</h2>
+    <div class="reveal max-w-[720px] mb-10 md:mb-14">
+      <p class="font-serif text-form-label text-mid-gray uppercase tracking-widest mb-4">{{ _("Nearby") }}</p>
+      <h2 class="font-serif text-h2 text-charcoal mb-6">{{ _("Destinations") }}</h2>
       <p class="font-sans text-sm md:text-base leading-5 md:leading-6 text-charcoal">
-        From coastal sanctuaries to mountain retreats, each residence is conceived as a dialogue between architecture and landscape—minimal, deliberate, and deeply restorative.
+        {{ _("From historic landmarks to vibrant districts, discover the soul of Ho Chi Minh City—curated moments within reach of your residence at 395/18 Diên Hồng.") }}
       </p>
-      <a href="/rooms" class="inline-block mt-8 font-sans text-sm text-charcoal underline decoration-charcoal underline-offset-4 hover:text-black hover:decoration-black transition-colors duration-[250ms] ease-aman">
-        Discover residences
-      </a>
     </div>
+
+    <div
+      id="destinations-grid"
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
+      aria-live="polite"
+      aria-busy="true"
+    ></div>
   </section>
 
-  <section id="experiences" class="bg-cream">
+  <!-- Experiences -->
+  <section id="experiences" class="bg-cream border-t border-light-border">
     <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10 py-13 md:py-20 lg:py-[52px]">
-      <div class="reveal max-w-[600px]">
-        <h2 class="font-serif text-h2 text-charcoal mb-6">Experiences</h2>
+      <div class="reveal max-w-[720px] mb-10 md:mb-14">
+        <p class="font-serif text-form-label text-mid-gray uppercase tracking-widest mb-4">{{ _("Curated for you") }}</p>
+        <h2 class="font-serif text-h2 text-charcoal mb-6">{{ _("Experiences") }}</h2>
         <p class="font-sans text-sm md:text-base leading-5 md:leading-6 text-charcoal">
-          Wellness rituals, private dining, and curated cultural immersions unfold at an unhurried pace—crafted for those who value presence over spectacle.
+          {{ _("Wellness rituals, private dining, and cultural immersions unfold at an unhurried pace—crafted for those who value presence over spectacle.") }}
         </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 lg:gap-12">
+        <article class="reveal destination-card group">
+          <div class="overflow-hidden aspect-[4/5] mb-6">
+            <img
+              src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80"
+              alt="{{ _('Serene spa treatment room with warm lighting') }}"
+              class="w-full h-full object-cover"
+              loading="lazy"
+              width="800"
+              height="1000"
+            />
+          </div>
+          <h3 class="font-serif text-h3 text-charcoal mb-3">{{ _("Wellness & Spa") }}</h3>
+          <p class="font-sans text-sm leading-5 text-charcoal">
+            {{ _("Holistic treatments inspired by Vietnamese botanical traditions—private suites, thermal rituals, and guided meditation at dawn.") }}
+          </p>
+        </article>
+
+        <article class="reveal reveal-delay-1 destination-card group">
+          <div class="overflow-hidden aspect-[4/5] mb-6">
+            <img
+              src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80"
+              alt="{{ _('Elegant fine dining table setting') }}"
+              class="w-full h-full object-cover"
+              loading="lazy"
+              width="800"
+              height="1000"
+            />
+          </div>
+          <h3 class="font-serif text-h3 text-charcoal mb-3">{{ _("Fine Dining") }}</h3>
+          <p class="font-sans text-sm leading-5 text-charcoal">
+            {{ _("Seasonal tasting menus pairing Saigon street-market ingredients with contemporary technique—served in an intimate courtyard setting.") }}
+          </p>
+        </article>
+
+        <article class="reveal reveal-delay-2 destination-card group">
+          <div class="overflow-hidden aspect-[4/5] mb-6">
+            <img
+              src="https://images.unsplash.com/photo-1528183429752-a97d0bf99b5a?auto=format&fit=crop&w=800&q=80"
+              alt="{{ _('Traditional Vietnamese architecture and lanterns') }}"
+              class="w-full h-full object-cover"
+              loading="lazy"
+              width="800"
+              height="1000"
+            />
+          </div>
+          <h3 class="font-serif text-h3 text-charcoal mb-3">{{ _("Cultural Immersions") }}</h3>
+          <p class="font-sans text-sm leading-5 text-charcoal">
+            {{ _("Private gallery visits, artisan workshops, and guided walks through historic districts—each journey tailored to your pace and curiosity.") }}
+          </p>
+        </article>
       </div>
     </div>
   </section>
 
-  <section id="about" class="mx-auto max-w-content px-4 md:px-6 lg:px-10 py-13 md:py-20 lg:py-[52px] border-t border-light-border">
-    <div class="reveal max-w-[600px]">
-      <h2 class="font-serif text-h2 text-charcoal mb-6">Our philosophy</h2>
-      <p class="font-sans text-sm md:text-base leading-5 md:leading-6 text-charcoal">
-        We believe luxury is the absence of excess. Every detail—from typography to touchpoints—invites contemplation and ease.
-      </p>
+  <!-- About -->
+  <section id="about" class="border-t border-light-border">
+    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10 py-13 md:py-20 lg:py-[52px]">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 lg:gap-16 items-center">
+        <div class="reveal overflow-hidden aspect-[16/11] md:aspect-[4/3]">
+          <img
+            src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1600&q=80"
+            alt="{{ _('Minimalist luxury hotel interior with natural light') }}"
+            class="w-full h-full object-cover"
+            loading="lazy"
+            width="1600"
+            height="1200"
+          />
+        </div>
+        <div class="reveal reveal-delay-1">
+          <p class="font-serif text-form-label text-mid-gray uppercase tracking-widest mb-4">{{ _("Our philosophy") }}</p>
+          <h2 class="font-serif text-h2 text-charcoal mb-6">{{ _("Where tranquility meets design") }}</h2>
+          <p class="font-sans text-sm md:text-base leading-5 md:leading-6 text-charcoal mb-6">
+            {{ _("Residences was conceived as a sanctuary within the city—a place where architecture breathes, light is measured, and every surface invites stillness. Our spaces honor Vietnamese craft while embracing a global language of restraint and warmth.") }}
+          </p>
+          <p class="font-sans text-sm md:text-base leading-5 md:leading-6 text-charcoal mb-6">
+            {{ _("We believe true luxury is the absence of excess: unhurried mornings, intuitive service that anticipates without intruding, and rooms that feel like private retreats rather than transactions.") }}
+          </p>
+          <p class="font-sans text-sm md:text-base leading-5 md:leading-6 text-charcoal">
+            {{ _("Whether you arrive for a weekend of discovery or an extended stay, our team crafts each detail to your rhythm—so you may simply be present.") }}
+          </p>
+        </div>
+      </div>
     </div>
   </section>
 
   <footer class="border-t border-light-border py-10">
-    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10 flex flex-col md:flex-row justify-between gap-4">
-      <p class="font-display text-sm text-charcoal">Residences</p>
-      <p class="font-sans text-form-label text-mid-gray">&copy; {{ current_year | default(2026) }} All rights reserved.</p>
+    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8 mb-10">
+        <div>
+          <p class="font-display text-sm text-charcoal mb-4">{{ _("Residences") }}</p>
+          <p class="font-sans text-sm text-mid-gray leading-5">
+            395/18 Diên Hồng,<br />TP Hồ Chí Minh
+          </p>
+        </div>
+        <div>
+          <p class="font-serif text-form-label text-charcoal uppercase tracking-widest mb-4">{{ _("Contact") }}</p>
+          <ul class="space-y-2 font-sans text-sm text-charcoal">
+            <li><a href="tel:0372863000" class="nav-link">0372863***</a></li>
+            <li><a href="mailto:admin@gmail.com" class="nav-link">admin@gmail.com</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="font-serif text-form-label text-charcoal uppercase tracking-widest mb-4">{{ _("Information") }}</p>
+          <ul class="space-y-2 font-sans text-sm">
+            <li><a href="#" class="nav-link text-charcoal">{{ _("Terms & Conditions") }}</a></li>
+            <li><a href="#" class="nav-link text-charcoal">{{ _("Privacy Policy") }}</a></li>
+            <li><a href="#" class="nav-link text-charcoal">{{ _("FAQs") }}</a></li>
+          </ul>
+        </div>
+        <div class="sm:col-span-2 lg:col-span-1 flex flex-col justify-end">
+          <p class="font-sans text-form-label text-mid-gray">&copy; {{ current_year | default(2026) }} {{ _("All rights reserved.") }}</p>
+        </div>
+      </div>
     </div>
   </footer>
 
-  <!-- Calendar overlay -->
+  </div><!-- /#page-content — end of blur wrapper. Modals below are NOT blurred. -->
+
+  <!-- Mobile drawer (OUTSIDE blur wrapper so it stays sharp when calendar opens) -->
+  <div
+    id="mobile-drawer"
+    class="fixed inset-0 z-50 calendar-overlay is-closed md:hidden"
+    aria-hidden="true"
+  >
+    <div class="absolute inset-0 bg-black/50" id="drawer-backdrop"></div>
+    <nav class="absolute top-0 right-0 h-full w-[min(100%,320px)] bg-white p-8 flex flex-col gap-6 font-display text-base">
+      <button type="button" id="drawer-close" class="self-end min-h-[44px] min-w-[44px] text-charcoal" aria-label="{{ _('Close menu') }}">&times;</button>
+      <a href="#destinations" class="nav-link min-h-[44px] flex items-center drawer-link">{{ _("Destinations") }}</a>
+      <a href="#experiences" class="nav-link min-h-[44px] flex items-center drawer-link">{{ _("Experiences") }}</a>
+      <a href="#about" class="nav-link min-h-[44px] flex items-center drawer-link">{{ _("About") }}</a>
+      <a href="#booking-bar" class="btn-primary mt-4 inline-flex items-center justify-center h-[44px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm drawer-link">
+        {{ _("Reserve") }}
+      </a>
+    </nav>
+  </div>
+
+  <!-- Calendar overlay (OUTSIDE blur wrapper so it stays sharp) -->
   <div
     id="calendar-overlay"
     class="fixed inset-0 z-[60] calendar-overlay is-closed flex items-center justify-center p-4"
@@ -376,14 +523,14 @@
     <div class="absolute inset-0 bg-black/40" id="calendar-backdrop"></div>
     <div class="relative bg-white w-full max-w-[600px] p-8 md:p-10 shadow-[0_4px_12px_rgba(0,0,0,0.15)] max-h-[90vh] overflow-y-auto">
       <div class="flex items-start justify-between mb-8">
-        <h3 id="calendar-title" class="font-serif text-h3 text-charcoal">Select dates</h3>
-        <button type="button" id="calendar-close" class="min-h-[44px] min-w-[44px] text-charcoal font-display text-2xl leading-none" aria-label="Close calendar">&times;</button>
+        <h3 id="calendar-title" class="font-serif text-h3 text-charcoal">{{ _("Select dates") }}</h3>
+        <button type="button" id="calendar-close" class="min-h-[44px] min-w-[44px] text-charcoal font-display text-2xl leading-none" aria-label="{{ _('Close calendar') }}">&times;</button>
       </div>
-      <p id="calendar-hint" class="font-sans text-sm text-mid-gray mb-6">Choose your check-in and check-out dates.</p>
+      <p id="calendar-hint" class="font-sans text-sm text-mid-gray mb-6">{{ _("Choose your check-in and check-out dates.") }}</p>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
         <div>
-          <label for="calendar_check_in" class="font-serif text-form-label text-charcoal block pb-2">Check-in</label>
+          <label for="calendar_check_in" class="font-serif text-form-label text-charcoal block pb-2">{{ _("Check-in") }}</label>
           <input
             type="date"
             id="calendar_check_in"
@@ -391,7 +538,7 @@
           />
         </div>
         <div>
-          <label for="calendar_check_out" class="font-serif text-form-label text-charcoal block pb-2">Check-out</label>
+          <label for="calendar_check_out" class="font-serif text-form-label text-charcoal block pb-2">{{ _("Check-out") }}</label>
           <input
             type="date"
             id="calendar_check_out"
@@ -408,14 +555,14 @@
           id="calendar-clear"
           class="min-h-[44px] font-sans text-sm text-charcoal underline decoration-charcoal underline-offset-4 hover:text-black transition-colors duration-[250ms] ease-aman"
         >
-          Clear
+          {{ _("Clear") }}
         </button>
         <button
           type="button"
           id="calendar-apply"
           class="btn-primary min-h-[44px] h-[42px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm"
         >
-          Apply dates
+          {{ _("Apply dates") }}
         </button>
       </div>
     </div>
@@ -425,8 +572,58 @@
     (function () {
       'use strict';
 
+      // ── Check for booking success parameter and show notification ──
+      (function showBookingSuccessNotification() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('booking_success') === 'true') {
+          // Create toast container if it doesn't exist
+          let toastContainer = document.getElementById('toast-container');
+          if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'fixed bottom-6 right-4 md:right-8 z-[70] flex flex-col gap-3 max-w-sm w-full pointer-events-none';
+            document.body.appendChild(toastContainer);
+          }
+
+          // Create toast element
+          const toast = document.createElement('div');
+          toast.className = 'toast-success pointer-events-auto bg-green-600 text-white px-5 py-4 font-sans text-sm leading-5 shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-green-700 opacity-0 transform translate-y-4 transition-all duration-400 ease-aman';
+          toast.textContent = '✓ Đặt phòng thành công! Vui lòng kiểm tra Gmail để nhận hóa đơn chi tiết.';
+          toastContainer.appendChild(toast);
+
+          // Animate in
+          requestAnimationFrame(() => {
+            toast.classList.remove('opacity-0', 'translate-y-4');
+            toast.classList.add('opacity-1', 'translate-y-0');
+          });
+
+          // Auto-remove after 5 seconds
+          setTimeout(() => {
+            toast.classList.add('opacity-0', 'translate-y-4');
+            setTimeout(() => toast.remove(), 400);
+          }, 5000);
+
+          // Clean up URL parameter
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      })();
+
       const MS_DAY = 86400000;
       const roomsSearchPath = "{{ rooms_search_path | default('/rooms') }}";
+      const I18N = {{ js_translations | tojson }};
+      const PAGE_LOCALE = "{{ current_locale | default('en') }}";
+
+      function t(key, vars) {
+        let text = I18N[key] || key;
+        if (!vars) return text;
+        Object.keys(vars).forEach((name) => {
+          text = text.replace(new RegExp('%\\(' + name + '\\)s', 'g'), String(vars[name]));
+        });
+        return text;
+      }
+
+      window.I18N = I18N;
+      window.t = t;
 
       const els = {
         form: document.getElementById('booking-search-form'),
@@ -452,7 +649,7 @@
         calendarCheckOut: document.getElementById('calendar_check_out'),
         calendarError: document.getElementById('calendar_error'),
         calendarHint: document.getElementById('calendar-hint'),
-        pageRoot: document.getElementById('page-root'),
+        pageRoot: document.getElementById('page-content'), // ✅ FIX: target content wrapper, not body
         menuToggle: document.getElementById('menu-toggle'),
         mobileDrawer: document.getElementById('mobile-drawer'),
         drawerBackdrop: document.getElementById('drawer-backdrop'),
@@ -482,7 +679,8 @@
 
       function formatDisplay(iso) {
         if (!iso) return null;
-        return parseISO(iso).toLocaleDateString(undefined, {
+        const locale = PAGE_LOCALE === 'vi' ? 'vi-VN' : 'en-US';
+        return parseISO(iso).toLocaleDateString(locale, {
           weekday: 'short',
           year: 'numeric',
           month: 'short',
@@ -526,22 +724,22 @@
         const errors = [];
         const today = parseISO(todayISO());
 
-        if (!checkIn) errors.push({ field: 'check_in', msg: 'Please select a check-in date.' });
-        if (!checkOut) errors.push({ field: 'check_out', msg: 'Please select a check-out date.' });
+        if (!checkIn) errors.push({ field: 'check_in', msg: t('Please select a check-in date.') });
+        if (!checkOut) errors.push({ field: 'check_out', msg: t('Please select a check-out date.') });
 
         if (checkIn && checkOut) {
           const inDate = parseISO(checkIn);
           const outDate = parseISO(checkOut);
 
           if (inDate < today) {
-            errors.push({ field: 'check_in', msg: 'Check-in cannot be in the past.' });
+            errors.push({ field: 'check_in', msg: t('Check-in cannot be in the past.') });
           }
           if (outDate <= inDate) {
-            errors.push({ field: 'check_out', msg: 'Check-out must be after check-in.' });
+            errors.push({ field: 'check_out', msg: t('Check-out must be after check-in.') });
           }
           const nights = Math.round((outDate - inDate) / MS_DAY);
           if (nights > 30) {
-            errors.push({ field: 'form', msg: 'Stays longer than 30 nights require a direct inquiry.' });
+            errors.push({ field: 'form', msg: t('Stays longer than 30 nights require a direct inquiry.') });
           }
         }
 
@@ -551,8 +749,8 @@
       function applyDatesToForm(checkIn, checkOut) {
         els.checkIn.value = checkIn || '';
         els.checkOut.value = checkOut || '';
-        els.checkInDisplay.textContent = checkIn ? formatDisplay(checkIn) : 'Select date';
-        els.checkOutDisplay.textContent = checkOut ? formatDisplay(checkOut) : 'Select date';
+        els.checkInDisplay.textContent = checkIn ? formatDisplay(checkIn) : t('Select date');
+        els.checkOutDisplay.textContent = checkOut ? formatDisplay(checkOut) : t('Select date');
         els.checkInDisplay.classList.toggle('text-mid-gray', !checkIn);
         els.checkOutDisplay.classList.toggle('text-mid-gray', !checkOut);
         els.checkInDisplay.classList.toggle('text-black', Boolean(checkIn));
@@ -570,8 +768,8 @@
         calendarTarget = target;
         els.calendarHint.textContent =
           target === 'check_in'
-            ? 'Select your check-in date.'
-            : 'Select your check-out date.';
+            ? t('Select your check-in date.')
+            : t('Select your check-out date.');
         els.calendarCheckIn.value = els.checkIn.value || '';
         els.calendarCheckOut.value = els.checkOut.value || '';
         els.calendarError.classList.add('hidden');
@@ -699,7 +897,7 @@
         });
 
         if (!guests) {
-          showFieldError('guests', 'Please select the number of guests.');
+          showFieldError('guests', t('Please select the number of guests.'));
           hasError = true;
         }
 
@@ -715,6 +913,7 @@
         heroBottom = hero.offsetTop + hero.offsetHeight;
         const scrollY = window.scrollY;
         const barInner = els.bookingBar.querySelector('.bg-cream');
+        const topBar = document.getElementById('header-top-bar');
 
         if (scrollY > heroBottom - 120) {
           els.bookingBar.classList.add('is-sticky-top');
@@ -722,11 +921,19 @@
           els.header.classList.remove('absolute', 'text-cream');
           els.header.classList.add('fixed', 'top-0', 'bg-white', 'shadow-[0_2px_4px_rgba(0,0,0,0.08)]');
           els.header.querySelectorAll('.nav-link').forEach((a) => {
-            a.classList.remove('!text-cream', 'hover:!text-white');
+            a.classList.remove('!text-cream', 'hover:!text-white', '!text-cream/90');
             a.classList.add('text-charcoal');
           });
           els.menuToggle.classList.remove('text-cream');
           els.menuToggle.classList.add('text-charcoal');
+          if (topBar) {
+            topBar.classList.remove('bg-black/30', 'border-cream/20');
+            topBar.classList.add('bg-cream', 'border-light-border');
+            topBar.querySelectorAll('a').forEach((a) => {
+              a.classList.remove('!text-cream/90', 'hover:!text-white');
+              a.classList.add('text-charcoal');
+            });
+          }
         } else {
           els.bookingBar.classList.remove('is-sticky-top');
           els.header.classList.add('absolute');
@@ -738,6 +945,14 @@
           });
           els.menuToggle.classList.add('text-cream');
           els.menuToggle.classList.remove('text-charcoal');
+          if (topBar) {
+            topBar.classList.add('bg-black/30', 'border-cream/20');
+            topBar.classList.remove('bg-cream', 'border-light-border');
+            topBar.querySelectorAll('a').forEach((a) => {
+              a.classList.add('!text-cream/90', 'hover:!text-white');
+              a.classList.remove('text-charcoal');
+            });
+          }
         }
       }
 
@@ -767,6 +982,95 @@
           if (i < 3) el.classList.add('is-visible');
         });
       });
+    })();
+
+    (function renderLocalDestinations() {
+      'use strict';
+
+      const t = window.t || function (key) { return key; };
+
+      const localDestinations = [
+        {
+          name: 'Ben Thanh Market',
+          type: 'Culture & History',
+          distanceKm: '2.1',
+          imageUrl:
+            'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80',
+        },
+        {
+          name: 'Independence Palace',
+          type: 'Culture & History',
+          distanceKm: '1.8',
+          imageUrl:
+            'data:image/jpeg;base64,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',
+        },
+        {
+          name: 'Notre Dame Cathedral',
+          type: 'Culture & History',
+          distanceKm: '2.0',
+          imageUrl:
+            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3NtTbggJgLTQzvK7lY-eSLh64IAbCajm5FQ&s',
+        },
+        {
+          name: 'Fine Dining / Nightlife (District 1)',
+          type: 'Gastronomy',
+          distanceKm: '1.5',
+          imageUrl:
+            'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
+        },
+      ];
+
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = String(str ?? '');
+        return div.innerHTML;
+      }
+
+      function renderDestinations() {
+        const grid = document.getElementById('destinations-grid');
+        if (!grid) return;
+
+        grid.setAttribute('aria-busy', 'false');
+        grid.innerHTML = localDestinations
+          .map(
+            (dest, i) => `
+          <article class="destination-card reveal${i > 0 ? ` reveal-delay-${Math.min(i, 3)}` : ''} group">
+            <div class="overflow-hidden aspect-[4/5] mb-4 md:mb-5">
+              <img
+                src="${escapeHtml(dest.imageUrl)}"
+                alt="${escapeHtml(dest.name)}"
+                class="w-full h-full object-cover transition-transform duration-[800ms] ease-aman group-hover:scale-105"
+                loading="lazy"
+                width="800"
+                height="1000"
+              />
+            </div>
+            <h3 class="font-serif text-h3 text-charcoal mb-2">${escapeHtml(dest.name)}</h3>
+            <p class="font-serif text-form-label text-mid-gray uppercase tracking-widest mb-1">${escapeHtml(t(dest.type))}</p>
+            <p class="font-sans text-sm text-charcoal">${escapeHtml(t('%(distance)s km away', { distance: dest.distanceKm }))}</p>
+          </article>`
+          )
+          .join('');
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+        );
+        grid.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', renderDestinations);
+      } else {
+        renderDestinations();
+      }
     })();
   </script>
 </body>

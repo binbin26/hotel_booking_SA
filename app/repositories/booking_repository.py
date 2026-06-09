@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from datetime import date
 
-from sqlalchemy import select
+from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.booking import Booking, BookingStatus, PaymentMethod
+from app.models.booking import Booking, BookingStatus, CancelledBy, PaymentMethod
 from app.models.room import Room, RoomStatus
 from app.repositories.base_repository import BaseRepository
 
@@ -36,12 +36,15 @@ class BookingRepository(BaseRepository[Booking]):
 
     async def create_booking(
         self,
-        user_id: int,
         room_id: int,
         check_in: date,
         check_out: date,
         total_nights: int,
         payment_method: PaymentMethod,
+        user_id: int | None = None,
+        guest_name: str = "",
+        guest_email: str = "",
+        guest_phone: str | None = None,
     ) -> BookingCreateResult:
         """Lock room, reject overlapping dates, then insert a booking."""
         room = await self._lock_room(room_id)
@@ -60,6 +63,9 @@ class BookingRepository(BaseRepository[Booking]):
             total_nights=total_nights,
             total_price=room.price_per_night * total_nights,
             payment_method=payment_method,
+            guest_name=guest_name,
+            guest_email=guest_email,
+            guest_phone=guest_phone,
         )
         self._session.add(booking)
         await self._session.flush()
@@ -69,6 +75,39 @@ class BookingRepository(BaseRepository[Booking]):
             room_available=True,
             booking=booking,
         )
+
+    async def get_booking_by_token(self, token: str) -> Booking | None:
+        """Fetch one booking by secure token with room and payments eager-loaded."""
+        stmt = (
+            select(Booking)
+            .where(Booking.secure_token == token)
+            .options(
+                selectinload(Booking.room),
+                selectinload(Booking.payments),
+            )
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_guest_booking(
+        self,
+        booking_id: int,
+        guest_email: str,
+    ) -> Booking | None:
+        """Fetch a guest booking matching both id and email with room and payments."""
+        stmt = (
+            select(Booking)
+            .where(
+                Booking.id == booking_id,
+                Booking.guest_email == guest_email,
+            )
+            .options(
+                selectinload(Booking.room),
+                selectinload(Booking.payments),
+            )
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
 
     async def get_booking_by_id(self, booking_id: int) -> Booking | None:
         """Fetch one booking by id with customer, room, and payments eager-loaded."""
@@ -84,13 +123,41 @@ class BookingRepository(BaseRepository[Booking]):
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_all_bookings(self) -> list[Booking]:
+        """Fetch all bookings sorted by created_at DESC with relations eager-loaded."""
+        stmt = (
+            select(Booking)
+            .options(
+                selectinload(Booking.user),
+                selectinload(Booking.room),
+                selectinload(Booking.payments),
+            )
+            .order_by(desc(Booking.created_at))
+        )
+        result = await self._session.execute(stmt)
+        return result.scalars().all()
+
+    async def get_user_bookings(self, user_id: int) -> list[Booking]:
+        """Fetch all bookings for a specific user sorted by created_at DESC."""
+        stmt = (
+            select(Booking)
+            .where(Booking.user_id == user_id)
+            .options(
+                selectinload(Booking.user),
+                selectinload(Booking.room),
+            )
+            .order_by(desc(Booking.created_at))
+        )
+        result = await self._session.execute(stmt)
+        return result.scalars().all()
+
     async def cancel_booking(
         self,
         booking_id: int,
         reason: str,
+        cancelled_by: CancelledBy,
     ) -> BookingCancelResult:
-        """Lock a booking row and set its status to CANCELLED."""
-        _ = reason
+        """Lock booking, persist cancellation metadata, and release the room."""
         booking = await self._lock_booking(booking_id)
         if booking is None:
             return BookingCancelResult(
@@ -105,6 +172,13 @@ class BookingRepository(BaseRepository[Booking]):
             )
 
         booking.status = BookingStatus.CANCELLED
+        booking.cancel_reason = reason
+        booking.cancelled_by = cancelled_by
+
+        room = await self._lock_room(booking.room_id)
+        if room is not None and room.status == RoomStatus.BOOKED:
+            room.status = RoomStatus.AVAILABLE
+
         await self._session.flush()
         await self._session.refresh(booking)
         return BookingCancelResult(

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Residences — Cancel Reservation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vietnamese text rendering optimization CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', path='global.css') }}" />
+  <!-- Vietnamese text Unicode normalization JavaScript -->
+  <script src="{{ url_for('static', path='vietnamese-text-normalizer.js') }}" defer></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            charcoal: '#313131',
+            cream: '#F3EEE7',
+            'mid-gray': '#82847F',
+            'light-border': '#DBDBDB',
+          },
+          fontFamily: {
+            display: ['Georgia', 'serif'],
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    * { border-radius: 0 !important; }
+    .field-input:focus { outline: none; border-color: #313131; }
+  </style>
+</head>
+<body class="bg-cream text-charcoal font-sans antialiased min-h-screen flex flex-col">
+  <header class="bg-white border-b border-light-border">
+    <div class="max-w-xl mx-auto px-6 py-10">
+      <p class="text-[10px] uppercase tracking-[0.15em] text-mid-gray mb-2">Residences</p>
+      <h1 class="font-display text-3xl font-normal">Cancel Reservation</h1>
+      <p class="text-mid-gray mt-2 text-sm">Reference #{{ booking.id }} · {{ room.room_number }}</p>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-xl mx-auto w-full px-6 py-12">
+    <div class="bg-white border border-light-border p-8 mb-6 text-sm space-y-2">
+      <p><span class="text-mid-gray">Guest:</span> {{ booking.guest_name }}</p>
+      <p><span class="text-mid-gray">Stay:</span> {{ booking.check_in }} → {{ booking.check_out }}</p>
+      <p><span class="text-mid-gray">Total:</span> {{ booking.total_price }}</p>
+    </div>
+
+    <form id="cancel-form" class="bg-white border border-light-border p-8 space-y-6">
+      <div>
+        <label class="block text-[10px] uppercase tracking-[0.15em] text-mid-gray mb-2" for="reason">Reason for cancellation</label>
+        <textarea class="field-input w-full border border-light-border px-4 py-3 text-sm min-h-[100px]" id="reason" name="reason" required placeholder="Please tell us why you are cancelling"></textarea>
+      </div>
+      <p id="form-message" class="hidden text-sm border p-3"></p>
+      <div class="flex gap-4">
+        <button type="submit" id="submit-btn" class="flex-1 py-3 bg-charcoal text-cream text-xs uppercase tracking-widest hover:bg-black transition-colors disabled:opacity-50">Confirm Cancellation</button>
+        <a href="{{ links.track_url }}" class="flex-1 py-3 border border-light-border text-center text-xs uppercase tracking-widest hover:border-charcoal transition-colors leading-[2.5]">Keep Reservation</a>
+      </div>
+    </form>
+  </main>
+
+  <footer class="text-center text-xs text-mid-gray py-8">
+    &copy; {{ current_year }} Residences. All rights reserved.
+  </footer>
+
+  <script>
+    const API_BASE = {{ api_base_url | tojson }};
+    const TOKEN = {{ secure_token | tojson }};
+
+    document.getElementById('cancel-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      const msg = document.getElementById('form-message');
+      const reason = document.getElementById('reason').value.trim();
+      if (!reason) return;
+
+      btn.disabled = true;
+      msg.classList.add('hidden');
+
+      try {
+        const res = await fetch(`${API_BASE}/bookings/public/${TOKEN}/cancel`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason }),
+        });
+        const data = await res.json();
+        msg.classList.remove('hidden');
+        if (data.success) {
+          msg.textContent = 'Đơn hàng của bạn đã được hủy thành công! Chúng tôi đang chuyển hướng bạn đến Gmail...';
+          msg.className = 'text-sm border border-light-border p-3 bg-cream';
+          btn.remove();
+          
+          // Redirect to Gmail after 2 seconds
+          setTimeout(() => {
+            window.open('https://mail.google.com', '_blank');
+          }, 2000);
+          
+          // Also redirect the current tab to home after a moment
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 2500);
+        } else {
+          msg.textContent = data.message || 'Không thể hủy đặt phòng.';
+          msg.className = 'text-sm border border-charcoal p-3';
+          btn.disabled = false;
+        }
+      } catch {
+        msg.textContent = 'Lỗi kết nối. Vui lòng thử lại.';
+        msg.classList.remove('hidden');
+        msg.className = 'text-sm border border-charcoal p-3';
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

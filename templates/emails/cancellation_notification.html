@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Booking Cancellation Notice</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F3EEE7;font-family:Georgia,'Times New Roman',serif;color:#313131;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#F3EEE7;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #DBDBDB;">
+          <tr>
+            <td style="padding:40px 32px 24px;border-bottom:1px solid #DBDBDB;background-color:#f5f5f5;">
+              <p style="margin:0 0 8px;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#82847F;">Residences</p>
+              <h1 style="margin:0;font-size:28px;font-weight:400;line-height:1.3;color:#313131;">Booking Cancellation Notice</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#55565B;">
+                Dear {{ booking.guest_name }},
+              </p>
+              <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#55565B;">
+                We are writing to inform you that your booking reservation has been cancelled by our property management team. Please review the details below for important information.
+              </p>
+
+              <div style="margin-bottom:32px;padding:16px;background-color:#fee;border-left:4px solid #d9534f;">
+                <p style="margin:0;font-size:13px;color:#d9534f;font-weight:600;">⚠ Your Reservation Has Been Cancelled</p>
+              </div>
+
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:32px;border:1px solid #DBDBDB;">
+                <tr>
+                  <td style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;">Reference</td>
+                  <td style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;">Guest</td>
+                </tr>
+                <tr>
+                  <td style="padding:16px;border-top:1px solid #DBDBDB;font-size:15px;">#{{ booking.id }}</td>
+                  <td style="padding:16px;border-top:1px solid #DBDBDB;font-size:15px;">{{ booking.guest_name }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;">Room</td>
+                  <td style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;">Original Dates</td>
+                </tr>
+                <tr>
+                  <td style="padding:16px;border-top:1px solid #DBDBDB;font-size:15px;">{{ room.room_number }} — {{ room.room_type }}</td>
+                  <td style="padding:16px;border-top:1px solid #DBDBDB;font-size:15px;">{{ booking.check_in }} → {{ booking.check_out }} ({{ booking.total_nights }} nights)</td>
+                </tr>
+                <tr>
+                  <td style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;">Original Total</td>
+                  <td style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;">Cancellation Reason</td>
+                </tr>
+                <tr>
+                  <td style="padding:16px;border-top:1px solid #DBDBDB;font-size:15px;font-weight:600;">{{ booking.total_price }}</td>
+                  <td style="padding:16px;border-top:1px solid #DBDBDB;font-size:15px;">{{ booking.cancel_reason or 'Cancelled by management' }}</td>
+                </tr>
+              </table>
+
+              <div style="margin-bottom:32px;padding:16px;background-color:#f9f9f9;border:1px solid #DBDBDB;">
+                <p style="margin:0 0 12px;font-size:13px;font-weight:600;color:#313131;">What Happens Next?</p>
+                <ul style="margin:12px 0;padding-left:20px;font-size:13px;color:#55565B;line-height:1.8;">
+                  <li>Your reservation is now inactive and your room is released.</li>
+                  <li>If payment was already made, please contact us for refund information.</li>
+                  <li>You will receive separate correspondence if applicable regarding your payment status.</li>
+                </ul>
+              </div>
+
+              <div style="margin-bottom:32px;padding:16px;background-color:#f9f9f9;border-left:4px solid #313131;">
+                <p style="margin:0 0 12px;font-size:13px;font-weight:600;color:#313131;">We Want to Help</p>
+                <p style="margin:0 0 12px;font-size:13px;color:#55565B;">If you have questions about this cancellation or would like to make alternative arrangements, our team is here to assist you:</p>
+                <ul style="margin:12px 0;padding-left:20px;font-size:13px;color:#55565B;">
+                  <li style="margin-bottom:8px;">
+                    <strong>Hotline Support:</strong> <a href="tel:0372863000" style="color:#313131;text-decoration:none;font-weight:bold;">0372863***</a>
+                  </li>
+                  <li>
+                    <strong>Email Support:</strong> <a href="mailto:admin@gmail.com" style="color:#313131;text-decoration:none;font-weight:bold;">admin@gmail.com</a>
+                  </li>
+                </ul>
+              </div>
+
+              <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#313131;">We Appreciate Your Understanding</p>
+              <p style="margin:0;font-size:12px;color:#82847F;">Thank you for your patience. We value your business and hope to serve you on a future occasion.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 32px;background-color:#F3EEE7;border-top:1px solid #DBDBDB;">
+              <p style="margin:0;font-size:12px;line-height:1.5;color:#82847F;">
+                If you have any disputes or questions regarding this cancellation, please contact us within 7 days for further assistance.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

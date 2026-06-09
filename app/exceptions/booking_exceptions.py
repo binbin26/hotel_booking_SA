@@ -28,3 +28,11 @@ class BookingAlreadyCancelledException(Exception):
     def __init__(self, booking_id: int) -> None:
         self.booking_id = booking_id
         super().__init__(f"Booking {booking_id} is already cancelled")
+
+
+class InvalidBookingTokenException(Exception):
+    """Raised when a guest secure token is missing, malformed, or not found."""
+
+    def __init__(self, token: str | None = None) -> None:
+        self.token = token
+        super().__init__("Booking link is expired or invalid")

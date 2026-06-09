@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin — Residences Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vietnamese text rendering optimization CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', path='global.css') }}" />
+  <!-- Vietnamese text Unicode normalization JavaScript -->
+  <script src="{{ url_for('static', path='vietnamese-text-normalizer.js') }}" defer></script>
+  
   <script>
     tailwind.config = {
       theme: {
@@ -112,14 +117,17 @@
       border-bottom-color: var(--charcoal) !important;
     }
 
+    /* hidden = không hiển thị và không chặn click; is-open = modal đang active */
     .modal-backdrop {
       opacity: 0;
+      pointer-events: none;
       transition: opacity 400ms var(--ease-aman);
       backdrop-filter: blur(0);
     }
 
     .modal-backdrop.is-open {
       opacity: 1;
+      pointer-events: auto;
       backdrop-filter: blur(4px);
     }
 
@@ -188,6 +196,13 @@
         >
           Rooms
         </button>
+        <button
+          type="button"
+          data-section="notifications"
+          class="sidebar-link w-full text-left px-4 py-3 min-h-[44px] font-sans text-sm text-charcoal"
+        >
+          Notifications
+        </button>
       </nav>
       <div class="p-4 border-t border-light-border">
         <a href="/" class="font-sans text-form-label text-mid-gray hover:text-charcoal transition-colors duration-[250ms] ease-aman">
@@ -233,11 +248,11 @@
                 <tr class="border-b border-light-border bg-cream/50">
                   <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">ID</th>
                   <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Guest</th>
-                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Room</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Room Details</th>
                   <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Check-in</th>
                   <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Check-out</th>
                   <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Total</th>
-                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Status</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Status &amp; Cancellation</th>
                   <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Actions</th>
                 </tr>
               </thead>
@@ -275,6 +290,30 @@
           </div>
         </section>
 
+        <!-- NOTIFICATIONS SECTION -->
+        <section id="section-notifications" class="admin-section hidden">
+          <div class="mb-6">
+            <h2 class="font-serif text-h2 text-charcoal mb-2">Guest interactions</h2>
+            <p class="font-sans text-sm text-mid-gray">Track guest interactions with booking emails and cancellations.</p>
+          </div>
+
+          <div class="border border-light-border bg-white table-scroll overflow-x-auto">
+            <table class="w-full min-w-[900px] text-left border-collapse">
+              <thead>
+                <tr class="border-b border-light-border bg-cream/50">
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Time</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Booking ID</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Guest</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Type</th>
+                  <th class="px-4 py-3 font-serif text-form-label text-charcoal uppercase tracking-wide">Message</th>
+                </tr>
+              </thead>
+              <tbody id="notifications-tbody"></tbody>
+            </table>
+            <p id="notifications-empty" class="hidden px-4 py-12 text-center font-sans text-sm text-mid-gray">No interactions recorded yet.</p>
+          </div>
+        </section>
+
       </main>
     </div>
   </div>
@@ -282,12 +321,12 @@
   <!-- Cancel booking modal -->
   <div
     id="cancel-modal"
-    class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+    class="modal-backdrop hidden fixed inset-0 z-[60] flex items-center justify-center p-4"
     aria-hidden="true"
     role="dialog"
     aria-labelledby="cancel-modal-title"
   >
-    <div class="modal-panel relative bg-white w-full max-w-[600px] p-8 md:p-10 shadow-[0_4px_12px_rgba(0,0,0,0.15)] pointer-events-auto">
+    <div class="modal-panel relative bg-white w-full max-w-[600px] p-8 md:p-10 shadow-[0_4px_12px_rgba(0,0,0,0.15)]">
       <button type="button" id="cancel-modal-close" class="absolute top-4 right-4 min-h-[44px] min-w-[44px] text-charcoal text-2xl" aria-label="Close">&times;</button>
       <h3 id="cancel-modal-title" class="font-serif text-h2 text-charcoal mb-2">Cancel reservation</h3>
       <p class="font-sans text-sm text-mid-gray mb-6">Booking <span id="cancel-booking-ref" class="text-charcoal">#—</span></p>
@@ -315,15 +354,60 @@
     </div>
   </div>
 
+  <!-- Change request modal -->
+  <div
+    id="change-modal"
+    class="modal-backdrop hidden fixed inset-0 z-[60] flex items-center justify-center p-4"
+    aria-hidden="true"
+    role="dialog"
+    aria-labelledby="change-modal-title"
+  >
+    <div class="modal-panel relative bg-white w-full max-w-[600px] p-8 md:p-10 shadow-[0_4px_12px_rgba(0,0,0,0.15)]">
+      <button type="button" id="change-modal-close" class="absolute top-4 right-4 min-h-[44px] min-w-[44px] text-charcoal text-2xl" aria-label="Close">&times;</button>
+      <h3 id="change-modal-title" class="font-serif text-h2 text-charcoal mb-2">Xử lý yêu cầu đổi ngày</h3>
+      <p class="font-sans text-sm text-mid-gray mb-6">Booking <span id="change-booking-ref" class="text-charcoal">#—</span></p>
+      
+      <div class="mb-6 space-y-4">
+        <div class="border border-light-border p-4 bg-cream/30">
+          <p class="font-serif text-form-label text-charcoal mb-2">Ngày hiện tại:</p>
+          <p id="change-old-dates" class="font-sans text-sm text-charcoal"></p>
+        </div>
+        <div class="border border-light-border p-4 bg-blue-50">
+          <p class="font-serif text-form-label text-charcoal mb-2">Ngày yêu cầu mới:</p>
+          <p id="change-new-dates" class="font-sans text-sm text-charcoal"></p>
+        </div>
+      </div>
+
+      <p id="change-modal-error" class="hidden mb-3 font-sans text-form-label text-charcoal border border-charcoal px-3 py-2"></p>
+      
+      <div class="flex flex-col sm:flex-row gap-3 sm:justify-end">
+        <button
+          type="button"
+          id="change-modal-reject"
+          class="btn-ghost min-h-[44px] px-4 font-sans text-sm text-red-600 border border-red-600 disabled:opacity-60"
+        >
+          Từ chối thay đổi
+        </button>
+        <button
+          type="button"
+          id="change-modal-approve"
+          class="btn-primary min-h-[44px] h-[42px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm disabled:opacity-60"
+        >
+          Phê duyệt ngày mới
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Edit room modal -->
   <div
     id="edit-modal"
-    class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+    class="modal-backdrop hidden fixed inset-0 z-[50] flex items-center justify-center p-4"
     aria-hidden="true"
     role="dialog"
     aria-labelledby="edit-modal-title"
   >
-    <div class="modal-panel relative bg-white w-full max-w-[600px] p-8 md:p-10 shadow-[0_4px_12px_rgba(0,0,0,0.15)] pointer-events-auto max-h-[90vh] overflow-y-auto">
+    <div class="modal-panel relative bg-white w-full max-w-[600px] p-8 md:p-10 shadow-[0_4px_12px_rgba(0,0,0,0.15)] max-h-[90vh] overflow-y-auto">
       <button type="button" id="edit-modal-close" class="absolute top-4 right-4 min-h-[44px] min-w-[44px] text-charcoal text-2xl" aria-label="Close">&times;</button>
       <h3 id="edit-modal-title" class="font-serif text-h2 text-charcoal mb-6">Edit room</h3>
       <p class="font-sans text-sm text-mid-gray mb-6">Room <span id="edit-room-ref" class="text-charcoal">—</span></p>
@@ -388,6 +472,7 @@
         bookingFilter: 'ALL',
         bookings: [],
         rooms: [],
+        notifications: [],
         cancelBookingId: null,
         editRoomId: null,
       };
@@ -399,19 +484,35 @@
         pageTitle: document.getElementById('page-title'),
         sectionBookings: document.getElementById('section-bookings'),
         sectionRooms: document.getElementById('section-rooms'),
+        sectionNotifications: document.getElementById('section-notifications'),
         bookingsTbody: document.getElementById('bookings-tbody'),
         bookingsEmpty: document.getElementById('bookings-empty'),
         roomsTbody: document.getElementById('rooms-tbody'),
         roomsEmpty: document.getElementById('rooms-empty'),
+        notificationsTbody: document.getElementById('notifications-tbody'),
+        notificationsEmpty: document.getElementById('notifications-empty'),
         cancelModal: document.getElementById('cancel-modal'),
         cancelReason: document.getElementById('cancel-reason'),
         cancelBookingRef: document.getElementById('cancel-booking-ref'),
         cancelModalError: document.getElementById('cancel-modal-error'),
         cancelModalSubmit: document.getElementById('cancel-modal-submit'),
+        cancelModalClose: document.getElementById('cancel-modal-close'),
+        cancelModalDismiss: document.getElementById('cancel-modal-dismiss'),
+        changeModal: document.getElementById('change-modal'),
+        changeBookingRef: document.getElementById('change-booking-ref'),
+        changeOldDates: document.getElementById('change-old-dates'),
+        changeNewDates: document.getElementById('change-new-dates'),
+        changeModalError: document.getElementById('change-modal-error'),
+        changeModalApprove: document.getElementById('change-modal-approve'),
+        changeModalReject: document.getElementById('change-modal-reject'),
+        changeModalClose: document.getElementById('change-modal-close'),
         editModal: document.getElementById('edit-modal'),
         editRoomForm: document.getElementById('edit-room-form'),
         editRoomRef: document.getElementById('edit-room-ref'),
         editModalError: document.getElementById('edit-modal-error'),
+        editModalClose: document.getElementById('edit-modal-close'),
+        editModalDismiss: document.getElementById('edit-modal-dismiss'),
+        editModalSave: document.getElementById('edit-modal-save'),
         editRoomType: document.getElementById('edit-room-type'),
         editCapacity: document.getElementById('edit-capacity'),
         editPrice: document.getElementById('edit-price'),
@@ -450,6 +551,75 @@
         return b.status || 'PENDING';
       }
 
+      /** Guest column: tên lớn + phone/email mono nhỏ bên dưới */
+      function buildGuestCellHtml(b) {
+        const name =
+          b.customer?.full_name ||
+          b.guest_name ||
+          `User #${b.user_id ?? '—'}`;
+        const phone = b.customer?.phone || b.guest_phone || '';
+        const email = b.customer?.email || b.guest_email || '';
+        const contact = [phone, email].filter(Boolean).join(' · ') || '—';
+        return `
+          <div class="font-sans text-sm font-medium text-charcoal">${escapeHtml(name)}</div>
+          <div class="font-mono text-form-label text-mid-gray mt-0.5">${escapeHtml(contact)}</div>
+        `;
+      }
+
+      /** Room column: số phòng + loại & sức chứa */
+      function buildRoomCellHtml(b) {
+        if (b.room) {
+          const typeLabel = String(b.room.room_type || '').replace(/_/g, ' ');
+          return `
+            <div class="font-sans text-sm font-medium text-charcoal">${escapeHtml(b.room.room_number || '—')}</div>
+            <div class="font-sans text-form-label text-mid-gray mt-0.5">${escapeHtml(typeLabel)} · ${escapeHtml(b.room.capacity ?? '—')} guests</div>
+          `;
+        }
+        return `<div class="font-sans text-sm text-charcoal">Room #${escapeHtml(b.room_id ?? '—')}</div>`;
+      }
+
+      /** Badge người hủy — ADMIN nền tối, CUSTOMER nền sáng */
+      function buildCancelledByBadge(cancelledBy) {
+        const isAdmin = cancelledBy === 'ADMIN';
+        const label = isAdmin ? 'Hủy bởi: Quản trị viên' : 'Hủy bởi: Khách hàng';
+        const classes = isAdmin
+          ? 'bg-charcoal text-cream border-charcoal'
+          : 'bg-cream text-charcoal border-light-border';
+        return `<span class="cancelled-by-badge inline-block mt-1.5 font-sans text-form-label uppercase tracking-wide border px-2 py-0.5 ${classes}">${escapeHtml(label)}</span>`;
+      }
+
+      /** Cột Status & Cancellation — thẻ trạng thái + box lý do khi đã hủy */
+      function buildStatusCellHtml(b) {
+        const displayStatus = getDisplayStatus(b);
+        let html = `<span class="status-cell font-sans text-form-label uppercase tracking-wide text-charcoal border border-light-border px-2 py-1 inline-block">${escapeHtml(displayStatus)}</span>`;
+
+        if (b.status === 'CANCELLED' && b.cancel_reason) {
+          html += `
+            <div class="cancellation-box mt-2 p-2 border border-light-border bg-cream/40 max-w-xs">
+              <p class="font-sans text-form-label text-mid-gray italic leading-relaxed">"${escapeHtml(b.cancel_reason)}"</p>
+              ${buildCancelledByBadge(b.cancelled_by || 'CUSTOMER')}
+            </div>
+          `;
+        }
+
+        // Hiển thị khối thông báo đổi ngày nếu có yêu cầu chờ duyệt
+        if (b.requested_check_in && b.requested_check_out) {
+          const newCheckIn = formatDate(b.requested_check_in);
+          const newCheckOut = formatDate(b.requested_check_out);
+          html += `
+            <div class="change-request-box mt-2 p-2 border border-blue-400 bg-blue-50 max-w-xs">
+              <p class="font-sans text-form-label text-blue-900 mb-2">🔄 Yêu cầu đổi ngày:</p>
+              <p class="font-sans text-sm text-blue-900">${escapeHtml(newCheckIn)} → ${escapeHtml(newCheckOut)}</p>
+              <button type="button" class="btn-review-change btn-ghost mt-2 text-sm text-blue-600 px-0" data-booking-id="${escapeHtml(getBookingId(b))}" data-old-check-in="${escapeHtml(b.check_in)}" data-old-check-out="${escapeHtml(b.check_out)}" data-new-check-in="${escapeHtml(b.requested_check_in)}" data-new-check-out="${escapeHtml(b.requested_check_out)}">
+                Xử lý thay đổi
+              </button>
+            </div>
+          `;
+        }
+
+        return html;
+      }
+
       function matchesFilter(b, filter) {
         if (filter === 'ALL') return true;
         const display = getDisplayStatus(b);
@@ -485,20 +655,44 @@
         }
       }
 
+      const MODALS = () => [els.cancelModal, els.editModal];
+
+      function isModalVisible(modalEl) {
+        return !modalEl.classList.contains('hidden');
+      }
+
       function openModal(modalEl) {
-        modalEl.classList.add('is-open');
-        modalEl.classList.remove('pointer-events-none');
+        // Đóng modal khác ngay lập tức (thêm hidden) để tránh xung đột lớp phủ z-index
+        MODALS().forEach((other) => {
+          if (other !== modalEl && isModalVisible(other)) {
+            closeModal(other, true);
+          }
+        });
+        modalEl.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          modalEl.classList.add('is-open');
+        });
         modalEl.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
       }
 
-      function closeModal(modalEl) {
+      function closeModal(modalEl, immediate = false) {
         modalEl.classList.remove('is-open');
-        modalEl.classList.add('pointer-events-none');
         modalEl.setAttribute('aria-hidden', 'true');
-        if (!document.querySelector('.modal-backdrop.is-open')) {
-          document.body.style.overflow = '';
+
+        const finish = () => {
+          modalEl.classList.add('hidden');
+          if (MODALS().every((m) => m.classList.contains('hidden'))) {
+            document.body.style.overflow = '';
+          }
+        };
+
+        if (immediate) {
+          finish();
+          return;
         }
+
+        setTimeout(finish, 400);
       }
 
       function switchSection(section) {
@@ -508,10 +702,22 @@
         });
         els.sectionBookings.classList.toggle('hidden', section !== 'bookings');
         els.sectionRooms.classList.toggle('hidden', section !== 'rooms');
-        els.pageTitle.textContent = section === 'bookings' ? 'Bookings' : 'Rooms';
+        els.sectionNotifications.classList.toggle('hidden', section !== 'notifications');
+        
+        if (section === 'bookings') {
+          els.pageTitle.textContent = 'Bookings';
+        } else if (section === 'rooms') {
+          els.pageTitle.textContent = 'Rooms';
+        } else if (section === 'notifications') {
+          els.pageTitle.textContent = 'Guest Interactions';
+        }
+        
         closeSidebarMobile();
+        
         if (section === 'rooms' && state.rooms.length === 0) {
           fetchRooms();
+        } else if (section === 'notifications' && state.notifications.length === 0) {
+          fetchNotifications();
         }
       }
 
@@ -536,30 +742,20 @@
 
         filtered.forEach((b) => {
           const id = getBookingId(b);
-          const guest =
-            b.customer?.full_name ||
-            b.guest_name ||
-            `User #${b.user_id ?? '—'}`;
-          const roomLabel = b.room
-            ? `${b.room.room_number || ''} (${b.room.room_type || ''})`
-            : `Room #${b.room_id ?? '—'}`;
-          const displayStatus = getDisplayStatus(b);
           const canCancel = b.status !== 'CANCELLED';
 
           const tr = document.createElement('tr');
           tr.className = 'border-b border-light-border hover:bg-cream/30 transition-colors duration-[250ms] ease-aman';
           tr.dataset.bookingId = String(id);
           tr.innerHTML = `
-            <td class="px-4 py-3 font-sans text-sm text-charcoal">#${escapeHtml(id)}</td>
-            <td class="px-4 py-3 font-sans text-sm text-charcoal">${escapeHtml(guest)}</td>
-            <td class="px-4 py-3 font-sans text-sm text-charcoal">${escapeHtml(roomLabel)}</td>
-            <td class="px-4 py-3 font-sans text-sm text-charcoal">${escapeHtml(formatDate(b.check_in))}</td>
-            <td class="px-4 py-3 font-sans text-sm text-charcoal">${escapeHtml(formatDate(b.check_out))}</td>
-            <td class="px-4 py-3 font-sans text-sm text-charcoal">${escapeHtml(formatCurrency(b.total_price))}</td>
-            <td class="px-4 py-3 font-sans text-sm">
-              <span class="status-cell font-sans text-form-label uppercase tracking-wide text-charcoal border border-light-border px-2 py-1 inline-block">${escapeHtml(displayStatus)}</span>
-            </td>
-            <td class="px-4 py-3 font-sans text-sm">
+            <td class="px-4 py-3 font-sans text-sm text-charcoal align-top">#${escapeHtml(id)}</td>
+            <td class="px-4 py-3 align-top">${buildGuestCellHtml(b)}</td>
+            <td class="px-4 py-3 align-top">${buildRoomCellHtml(b)}</td>
+            <td class="px-4 py-3 font-sans text-sm text-charcoal align-top">${escapeHtml(formatDate(b.check_in))}</td>
+            <td class="px-4 py-3 font-sans text-sm text-charcoal align-top">${escapeHtml(formatDate(b.check_out))}</td>
+            <td class="px-4 py-3 font-sans text-sm text-charcoal align-top">${escapeHtml(formatCurrency(b.total_price))}</td>
+            <td class="px-4 py-3 align-top status-cell-wrapper">${buildStatusCellHtml(b)}</td>
+            <td class="px-4 py-3 font-sans text-sm align-top">
               ${
                 canCancel
                   ? `<button type="button" class="btn-cancel btn-ghost text-sm text-charcoal min-h-[44px] px-2" data-booking-id="${escapeHtml(id)}">Cancel</button>`
@@ -573,28 +769,120 @@
         els.bookingsTbody.querySelectorAll('.btn-cancel').forEach((btn) => {
           btn.addEventListener('click', () => openCancelModal(btn.dataset.bookingId));
         });
+
+        // Gắn sự kiện click cho các nút "Xử lý thay đổi"
+        els.bookingsTbody.querySelectorAll('.btn-review-change').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const bookingId = btn.dataset.bookingId;
+            const oldCheckIn = btn.dataset.oldCheckIn;
+            const oldCheckOut = btn.dataset.oldCheckOut;
+            const newCheckIn = btn.dataset.newCheckIn;
+            const newCheckOut = btn.dataset.newCheckOut;
+            openChangeModal(bookingId, oldCheckIn, oldCheckOut, newCheckIn, newCheckOut);
+          });
+        });
+      }
+
+      function openChangeModal(bookingId, oldCheckIn, oldCheckOut, newCheckIn, newCheckOut) {
+        state.changeBookingId = bookingId;
+        els.changeBookingRef.textContent = `#${bookingId}`;
+        els.changeOldDates.textContent = `${formatDate(oldCheckIn)} → ${formatDate(oldCheckOut)}`;
+        els.changeNewDates.textContent = `${formatDate(newCheckIn)} → ${formatDate(newCheckOut)}`;
+        els.changeModalError.classList.add('hidden');
+        openModal(els.changeModal);
+      }
+
+      async function submitChangeResponse(action) {
+        els.changeModalError.classList.add('hidden');
+        els.changeModalApprove.disabled = true;
+        els.changeModalReject.disabled = true;
+
+        try {
+          const response = await fetch(
+            `${API_BASE}/admin/bookings/${encodeURIComponent(state.changeBookingId)}/change-response`,
+            {
+              method: 'POST',
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+              body: JSON.stringify({ action }),
+            }
+          );
+          let payload = null;
+          try {
+            payload = await response.json();
+          } catch {
+            payload = null;
+          }
+
+          if (!response.ok || payload?.success === false) {
+            throw new Error(
+              payload?.message || `Xử lý thất bại (${response.status}).`
+            );
+          }
+
+          closeModal(els.changeModal);
+          showToast(payload?.message || 'Yêu cầu đã được xử lý.', true);
+          
+          // Refresh bookings table to update status
+          setTimeout(() => {
+            fetchBookings();
+          }, 500);
+        } catch (err) {
+          els.changeModalError.textContent =
+            err instanceof Error ? err.message : 'Xử lý thất bại.';
+          els.changeModalError.classList.remove('hidden');
+          showToast(
+            err instanceof Error ? err.message : 'Xử lý thất bại.',
+            false
+          );
+        } finally {
+          els.changeModalApprove.disabled = false;
+          els.changeModalReject.disabled = false;
+        }
       }
 
       function updateBookingRow(bookingId, updates) {
+        const id = String(bookingId);
         const idx = state.bookings.findIndex(
-          (b) => String(getBookingId(b)) === String(bookingId)
+          (b) => String(getBookingId(b)) === id
         );
         if (idx >= 0) {
           state.bookings[idx] = { ...state.bookings[idx], ...updates };
         }
-        const tr = els.bookingsTbody.querySelector(
-          `tr[data-booking-id="${bookingId}"]`
-        );
-        if (tr) {
-          const statusCell = tr.querySelector('.status-cell');
-          if (statusCell) {
-            statusCell.textContent = updates.status || 'CANCELLED';
+
+        const booking = idx >= 0 ? state.bookings[idx] : null;
+        const tr = els.bookingsTbody.querySelector(`tr[data-booking-id="${id}"]`);
+
+        if (!booking) {
+          tr?.remove();
+          return;
+        }
+
+        if (!matchesFilter(booking, state.bookingFilter)) {
+          tr?.remove();
+          if (els.bookingsTbody.children.length === 0) {
+            els.bookingsEmpty.classList.remove('hidden');
           }
-          const actionsCell = tr.cells[tr.cells.length - 1];
-          if (actionsCell) {
-            actionsCell.innerHTML =
-              '<span class="text-mid-gray text-form-label">—</span>';
-          }
+          return;
+        }
+
+        if (!tr) {
+          renderBookingsTable();
+          return;
+        }
+
+        const statusWrapper = tr.querySelector('.status-cell-wrapper');
+        if (statusWrapper) {
+          statusWrapper.innerHTML = buildStatusCellHtml(booking);
+        }
+
+        const actionsCell = tr.cells[tr.cells.length - 1];
+        if (actionsCell && booking.status === 'CANCELLED') {
+          actionsCell.innerHTML =
+            '<span class="text-mid-gray text-form-label">—</span>';
         }
       }
 
@@ -613,6 +901,7 @@
           try {
             const response = await fetch(url, {
               headers: { Accept: 'application/json' },
+              credentials: 'include',
             });
             let payload = null;
             try {
@@ -753,6 +1042,137 @@
         if (statusEl) statusEl.textContent = room.status || '—';
       }
 
+      async function fetchNotifications() {
+        els.notificationsTbody.innerHTML = '';
+        els.notificationsEmpty.classList.add('hidden');
+
+        const url = `${API_BASE}/admin/notifications`;
+
+        try {
+          const response = await fetch(url, {
+            headers: { Accept: 'application/json' },
+          });
+          let payload = null;
+          try {
+            payload = await response.json();
+          } catch {
+            payload = null;
+          }
+
+          if (!response.ok) {
+            throw new Error(payload?.message || `HTTP ${response.status}`);
+          }
+
+          state.notifications = Array.isArray(payload?.data) ? payload.data : [];
+          renderNotificationsTable();
+        } catch (err) {
+          els.notificationsTbody.innerHTML = '';
+          els.notificationsEmpty.classList.remove('hidden');
+          els.notificationsEmpty.textContent =
+            err instanceof Error ? err.message : 'Could not load notifications.';
+          showToast('Failed to load notifications.', false);
+        }
+      }
+
+      function renderNotificationsTable() {
+        els.notificationsTbody.innerHTML = '';
+
+        if (state.notifications.length === 0) {
+          els.notificationsEmpty.classList.remove('hidden');
+          return;
+        }
+
+        els.notificationsEmpty.classList.add('hidden');
+
+        state.notifications.forEach((log) => {
+          const tr = document.createElement('tr');
+          
+          // Định dạng thời gian
+          const timestamp = log.created_at ? new Date(log.created_at).toLocaleString() : '—';
+          
+          // Định dạng nhãn hiển thị loại tương tác
+          const typeLabel = log.interaction_type
+            .replace(/_/g, ' ')
+            .split(' ')
+            .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+            .join(' ');
+          
+          // CẤU HÌNH CLICK CHO DÒNG THÔNG BÁO:
+          if (log.action === 'review_change') {
+            // Thêm hiệu ứng di chuột chọn dòng và đổi màu nền nổi bật cho Admin biết click được
+            tr.className = 'border-b border-light-border bg-blue-50/30 hover:bg-blue-100/60 cursor-pointer transition-colors duration-[250ms] ease-aman';
+            tr.title = "Nhấp vào đây để xử lý yêu cầu đổi ngày";
+            
+            tr.addEventListener('click', () => {
+              // Tìm thông tin booking tương ứng trong bộ nhớ tạm để lấy ngày tháng cũ/mới nạp vào modal
+              const booking = state.bookings.find(b => String(getBookingId(b)) === String(log.booking_id));
+              
+              // Giải pháp bóc tách ngày thông minh từ tin nhắn nếu Object bị rỗng
+              let reqCheckIn = booking?.requested_check_in;
+              let reqCheckOut = booking?.requested_check_out;
+              
+              if (!reqCheckIn || !reqCheckOut) {
+                // Thử parse từ message nếu format giống "2026-06-10 -> 2026-06-11"
+                const match = log.message.match(/(\d{4}-\d{2}-\d{2})\s*->\s*(\d{4}-\d{2}-\d{2})/);
+                if (match) {
+                  reqCheckIn = match[1];
+                  reqCheckOut = match[2];
+                }
+              }
+              
+              if (booking && reqCheckIn && reqCheckOut) {
+                // Truyền đúng 5 tham số: ID + 4 chuỗi ngày ISO thô (chưa format)
+                openChangeModal(
+                  log.booking_id,
+                  booking.check_in,
+                  booking.check_out,
+                  reqCheckIn,
+                  reqCheckOut
+                );
+              } else {
+                showToast(`Đang đồng bộ dữ liệu đơn #${log.booking_id}, vui lòng thử lại sau giây lát...`, false);
+                fetchBookings(); // Tải lại danh sách phòng phòng hờ dữ liệu chưa khớp
+              }
+            });
+          } else {
+            // Dòng thông báo thường không có hành động xử lý
+            tr.className = 'border-b border-light-border hover:bg-cream/30 transition-colors duration-[250ms] ease-aman';
+          }
+          
+          tr.innerHTML = `
+            <td class="px-4 py-3 font-sans text-form-label text-mid-gray">${escapeHtml(timestamp)}</td>
+            <td class="px-4 py-3 font-sans text-sm font-medium text-charcoal">#${escapeHtml(log.booking_id)}</td>
+            <td class="px-4 py-3 font-sans text-sm text-charcoal">${escapeHtml(log.guest_name)}</td>
+            <td class="px-4 py-3 font-sans text-sm">
+              <span class="font-sans text-form-label uppercase tracking-wide ${log.action === 'review_change' ? 'border border-blue-400 text-blue-700 bg-blue-50' : 'border border-light-border text-charcoal'} px-2 py-0.5 inline-block">
+                ${escapeHtml(typeLabel)}
+              </span>
+            </td>
+            <td class="px-4 py-3 font-sans text-sm text-mid-gray">${escapeHtml(log.message)} ${log.action === 'review_change' ? '<span class="text-blue-600 font-medium ml-1">➔ Click để xử lý</span>' : ''}</td>
+          `;
+          els.notificationsTbody.appendChild(tr);
+        });
+      }
+
+      function addNotificationToTop(notification) {
+        // Add new notification to the state at the beginning
+        const log = {
+          id: Math.random(),
+          booking_id: notification.booking_id,
+          interaction_type: notification.type,
+          guest_name: notification.guest_name,
+          message: notification.message,
+          action: notification.action,
+          created_at: notification.timestamp,
+        };
+        state.notifications.unshift(log);
+        
+        // If we're on notifications section, update the table
+        if (state.activeSection === 'notifications') {
+          renderNotificationsTable();
+        }
+      }
+
       function openCancelModal(bookingId) {
         state.cancelBookingId = bookingId;
         els.cancelBookingRef.textContent = `#${bookingId}`;
@@ -774,18 +1194,20 @@
         els.cancelModalSubmit.disabled = true;
 
         try {
+          // PATCH /api/bookings/:id/cancel — gửi lý do và phân loại người hủy (ADMIN)
+          // Thêm /admin vào đường dẫn call API
           const response = await fetch(
-            `${API_BASE}/bookings/${encodeURIComponent(state.cancelBookingId)}/cancel`,
+            `${API_BASE}/admin/bookings/${encodeURIComponent(state.cancelBookingId)}/cancel`,
             {
               method: 'PATCH',
               headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ reason }),
+              credentials: 'include',
+              body: JSON.stringify({ reason, cancelled_by: 'ADMIN' }),
             }
           );
-
           let payload = null;
           try {
             payload = await response.json();
@@ -801,8 +1223,9 @@
 
           const data = payload?.data ?? {};
           updateBookingRow(state.cancelBookingId, {
-            status: 'CANCELLED',
+            status: data.status || 'CANCELLED',
             cancel_reason: data.cancel_reason || reason,
+            cancelled_by: data.cancelled_by || 'ADMIN',
           });
 
           closeModal(els.cancelModal);
@@ -875,6 +1298,7 @@
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
               },
+              credentials: 'include',
               body: JSON.stringify(body),
             }
           );
@@ -934,11 +1358,15 @@
         els.cancelModalDismiss.addEventListener('click', () => closeModal(els.cancelModal));
         els.cancelModalSubmit.addEventListener('click', submitCancel);
 
+        els.changeModalClose.addEventListener('click', () => closeModal(els.changeModal));
+        els.changeModalApprove.addEventListener('click', () => submitChangeResponse('APPROVE'));
+        els.changeModalReject.addEventListener('click', () => submitChangeResponse('REJECT'));
+
         els.editModalClose.addEventListener('click', () => closeModal(els.editModal));
         els.editModalDismiss.addEventListener('click', () => closeModal(els.editModal));
         els.editRoomForm.addEventListener('submit', submitEditRoom);
 
-        [els.cancelModal, els.editModal].forEach((modal) => {
+        [els.cancelModal, els.changeModal, els.editModal].forEach((modal) => {
           modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal(modal);
           });
@@ -947,14 +1375,97 @@
         document.addEventListener('keydown', (e) => {
           if (e.key === 'Escape') {
             closeModal(els.cancelModal);
+            closeModal(els.changeModal);
             closeModal(els.editModal);
           }
         });
       }
 
+      function startSSEConnection() {
+        /**
+         * Connect to SSE stream for real-time notifications
+         * Shows toast when guests interact with emails or bookings are cancelled
+         */
+        try {
+          const eventSource = new EventSource(`${API_BASE}/admin/notifications/stream`);
+          
+          eventSource.addEventListener('message', (event) => {
+            if (event.data === ': heartbeat') {
+              // Ignore heartbeat messages
+              return;
+            }
+            
+            try {
+              const notification = JSON.parse(event.data);
+              handleRealtimeNotification(notification);
+            } catch (e) {
+              console.error('Failed to parse notification:', e);
+            }
+          });
+
+          eventSource.addEventListener('error', () => {
+            console.warn('SSE connection lost, attempting to reconnect in 5 seconds...');
+            eventSource.close();
+            setTimeout(startSSEConnection, 5000);
+          });
+
+          return eventSource;
+        } catch (e) {
+          console.error('Failed to start SSE connection:', e);
+        }
+      }
+
+      function handleRealtimeNotification(notification) {
+        /**
+         * Handle incoming real-time notifications:
+         * - invoice_interaction: Guest clicked email link
+         * - booking_cancelled_by_admin: Admin cancelled booking
+         * - booking_cancelled_by_guest: Guest cancelled booking
+         * - booking_change_requested: Guest requested to change dates
+         */
+        const messageMap = {
+          'invoice_interaction': `📧 ${notification.guest_name} tương tác với email hóa đơn (${notification.action})`,
+          'booking_cancelled_by_admin': `❌ Booking #${notification.booking_id} đã được hủy bởi admin`,
+          'booking_cancelled_by_guest': `⚠️ Khách hàng ${notification.guest_name} đã hủy booking #${notification.booking_id}`,
+          'booking_created': `✓ Booking mới #${notification.booking_id} từ ${notification.guest_name}`,
+          'booking_change_requested': `🔔 YÊU CẦU ĐỔI NGÀY: Booking #${notification.booking_id} (${notification.guest_name})`,
+        };
+
+        const message = messageMap[notification.type] || notification.message;
+        showToast(message, true);
+
+        // Special handling for booking_change_requested: update state with requested dates
+        if (notification.type === 'booking_change_requested') {
+          const bookingId = String(notification.booking_id);
+          const idx = state.bookings.findIndex(b => String(getBookingId(b)) === bookingId);
+          
+          if (idx >= 0 && notification.requested_check_in && notification.requested_check_out) {
+            // Update booking with requested dates
+            state.bookings[idx].requested_check_in = notification.requested_check_in;
+            state.bookings[idx].requested_check_out = notification.requested_check_out;
+            
+            console.log(`Updated booking #${bookingId} with requested dates`, {
+              requested_check_in: notification.requested_check_in,
+              requested_check_out: notification.requested_check_out,
+            });
+          }
+        }
+
+        // Add notification to top of notifications list
+        addNotificationToTop(notification);
+
+        // Refresh bookings table to show updated status
+        setTimeout(() => {
+          fetchBookings();
+        }, 500);
+      }
+
       function init() {
         bindEvents();
         fetchBookings();
+        
+        // Start SSE connection for real-time notifications
+        startSSEConnection();
       }
 
       init();

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thông báo kết quả yêu cầu đổi ngày đặt phòng</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F3EEE7;font-family:Georgia,'Times New Roman',serif;color:#313131;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#F3EEE7;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #DBDBDB;">
+          <tr>
+            <td style="padding:40px 32px 24px;border-bottom:1px solid #DBDBDB;background-color:#f5f5f5;">
+              <p style="margin:0 0 8px;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#82847F;">Residences</p>
+              <h1 style="margin:0;font-size:28px;font-weight:400;line-height:1.3;color:#313131;">
+                {% if action == 'APPROVE' %}
+                  Yêu cầu đổi ngày đã được phê duyệt
+                {% else %}
+                  Thông báo kết quả yêu cầu đổi ngày
+                {% endif %}
+              </h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#55565B;">
+                Kính gửi {{ booking.guest_name }},
+              </p>
+
+              {% if action == 'APPROVE' %}
+                <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#55565B;">
+                  Yêu cầu thay đổi ngày đặt phòng của bạn đã được phê duyệt thành công. Vui lòng kiểm tra lại thông tin ngày mới trên hệ thống.
+                </p>
+
+                <div style="margin-bottom:32px;padding:16px;background-color:#e8f5e9;border-left:4px solid #4caf50;">
+                  <p style="margin:0;font-size:13px;color:#2e7d32;font-weight:600;">✓ Phê duyệt thành công</p>
+                </div>
+              {% else %}
+                <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#55565B;">
+                  Rất tiếc, yêu cầu thay đổi ngày đặt phòng của bạn không được phê duyệt do phòng không khả dụng vào thời gian yêu cầu hoặc các lý do vận hành khác. Khách sạn sẽ giữ nguyên lịch trình đặt phòng cũ của bạn.
+                </p>
+
+                <div style="margin-bottom:32px;padding:16px;background-color:#fce4ec;border-left:4px solid #d9534f;">
+                  <p style="margin:0;font-size:13px;color:#c2185b;font-weight:600;">✗ Yêu cầu từ chối</p>
+                </div>
+              {% endif %}
+
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:32px;border:1px solid #DBDBDB;">
+                <tr>
+                  <td colspan="2" style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;">Thông tin đặt phòng</td>
+                </tr>
+                <tr>
+                  <td style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;width:50%;">Mã đặt phòng</td>
+                  <td style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;width:50%;">Tên khách</td>
+                </tr>
+                <tr>
+                  <td style="padding:16px;border-top:1px solid #DBDBDB;font-size:15px;font-weight:600;">#{{ booking.id }}</td>
+                  <td style="padding:16px;border-top:1px solid #DBDBDB;font-size:15px;">{{ booking.guest_name }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;">Phòng</td>
+                  <td style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;">Loại phòng</td>
+                </tr>
+                <tr>
+                  <td style="padding:16px;border-top:1px solid #DBDBDB;font-size:15px;">{{ room.room_number }}</td>
+                  <td style="padding:16px;border-top:1px solid #DBDBDB;font-size:15px;">{{ room.room_type }}</td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;">Ngày đặt phòng hiện tại (không thay đổi)</td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="padding:16px;border-top:1px solid #DBDBDB;font-size:15px;">
+                    <strong>Nhận phòng:</strong> {{ booking.check_in }}<br>
+                    <strong>Trả phòng:</strong> {{ booking.check_out }}<br>
+                    <strong>Số đêm:</strong> {{ booking.total_nights }} đêm
+                  </td>
+                </tr>
+              </table>
+
+              <div style="margin-bottom:32px;padding:16px;background-color:#f9f9f9;border:1px solid #DBDBDB;">
+                <p style="margin:0 0 12px;font-size:13px;font-weight:600;color:#313131;">Bước tiếp theo</p>
+                {% if action == 'APPROVE' %}
+                  <ul style="margin:12px 0;padding-left:20px;font-size:13px;color:#55565B;line-height:1.8;">
+                    <li>Ngày đặt phòng của bạn đã được cập nhật thành ngày mới theo yêu cầu.</li>
+                    <li>Đơn thanh toán của bạn có thể được cập nhật nếu giá phòng thay đổi theo ngày mới.</li>
+                    <li>Vui lòng kiểm tra email hoặc hóa đơn mới trên hệ thống của chúng tôi.</li>
+                  </ul>
+                {% else %}
+                  <ul style="margin:12px 0;padding-left:20px;font-size:13px;color:#55565B;line-height:1.8;">
+                    <li>Lịch trình đặt phòng cũ của bạn vẫn có hiệu lực.</li>
+                    <li>Nếu bạn muốn yêu cầu một lịch trình khác, vui lòng liên hệ với chúng tôi.</li>
+                    <li>Chúng tôi sẽ cố gắng hỗ trợ bạn tìm giải pháp tốt nhất.</li>
+                  </ul>
+                {% endif %}
+              </div>
+
+              <div style="margin-bottom:32px;padding:16px;background-color:#f9f9f9;border-left:4px solid #313131;">
+                <p style="margin:0 0 12px;font-size:13px;font-weight:600;color:#313131;">Hỗ trợ khách hàng</p>
+                <p style="margin:0 0 12px;font-size:13px;color:#55565B;">Nếu bạn có bất kỳ thắc mắc hoặc cần hỗ trợ thêm, vui lòng liên hệ với chúng tôi qua:</p>
+                <ul style="margin:12px 0;padding-left:20px;font-size:13px;color:#55565B;">
+                  <li style="margin-bottom:8px;">
+                    <strong>Hotline hỗ trợ:</strong> <a href="tel:0372863000" style="color:#313131;text-decoration:none;font-weight:bold;">0372863***</a>
+                  </li>
+                  <li>
+                    <strong>Email hỗ trợ:</strong> <a href="mailto:admin@gmail.com" style="color:#313131;text-decoration:none;font-weight:bold;">admin@gmail.com</a>
+                  </li>
+                </ul>
+              </div>
+
+              <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#313131;">Cảm ơn bạn đã tin tưởng Residences</p>
+              <p style="margin:0;font-size:12px;color:#82847F;">Chúng tôi luôn sẵn sàng phục vụ bạn.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 32px;background-color:#F3EEE7;border-top:1px solid #DBDBDB;">
+              <p style="margin:0;font-size:12px;line-height:1.5;color:#82847F;">
+                Đây là email tự động. Vui lòng không trả lời email này. Nếu có bất kỳ câu hỏi, vui lòng liên hệ trực tiếp với đội hỗ trợ của chúng tôi.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

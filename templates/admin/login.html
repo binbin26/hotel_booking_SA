@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Sign In</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            charcoal: '#313131',
+            cream: '#F3EEE7',
+            'mid-gray': '#82847F',
+            'light-border': '#DBDBDB',
+          },
+          fontFamily: {
+            display: ['"Lyon Display Web"', 'Georgia', 'serif'],
+            serif: ['"Lyon Text Web"', 'Georgia', 'serif'],
+            sans: ['WhitneySSm', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+          },
+          fontSize: {
+            h1: ['31px', { lineHeight: '45px' }],
+            'form-label': ['10px', { lineHeight: '14px' }],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    * { border-radius: 0 !important; }
+    .form-input {
+      border: 0;
+      border-bottom: 1px solid #dbdbdb;
+      outline: none;
+    }
+    .form-input:focus {
+      border-bottom-color: #313131;
+    }
+    .btn-primary {
+      transition: background-color 250ms ease, color 250ms ease;
+    }
+    .btn-primary:hover {
+      background-color: #000;
+      color: #fff;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-cream font-sans text-charcoal flex items-center justify-center px-4">
+  <main class="w-full max-w-md border border-light-border bg-white p-8 md:p-10">
+    <header class="mb-8 text-center">
+      <p class="font-serif text-form-label text-mid-gray uppercase tracking-widest mb-2">Residences</p>
+      <h1 class="font-display text-h1 text-charcoal">Admin Portal</h1>
+      <p class="font-sans text-sm text-mid-gray mt-2">Sign in to manage bookings and rooms.</p>
+    </header>
+
+    {% if error_message %}
+    <p class="mb-6 font-sans text-form-label text-charcoal border border-charcoal px-3 py-2" role="alert">
+      {{ error_message }}
+    </p>
+    {% endif %}
+
+    <form method="post" action="/admin/login" class="space-y-6">
+      <div>
+        <label for="username" class="font-serif text-form-label text-charcoal block pb-2">Username</label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          required
+          autocomplete="username"
+          value="{{ username | default('') }}"
+          class="form-input w-full bg-white font-sans text-sm px-[7px] py-2 min-h-[44px]"
+        />
+      </div>
+      <div>
+        <label for="password" class="font-serif text-form-label text-charcoal block pb-2">Password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          required
+          autocomplete="current-password"
+          class="form-input w-full bg-white font-sans text-sm px-[7px] py-2 min-h-[44px]"
+        />
+      </div>
+      <button
+        type="submit"
+        class="btn-primary w-full min-h-[44px] h-[42px] border border-charcoal bg-charcoal text-cream font-sans text-sm"
+      >
+        Sign in
+      </button>
+    </form>
+
+    <p class="mt-8 text-center font-sans text-form-label text-mid-gray">
+      <a href="/" class="underline hover:text-charcoal">Back to guest site</a>
+    </p>
+  </main>
+</body>
+</html>

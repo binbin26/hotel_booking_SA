@@ -5,18 +5,16 @@ import sys
 from decimal import Decimal
 from pathlib import Path
 
-from passlib.context import CryptContext
 from sqlalchemy import select
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from app.core.security import hash_password  # noqa: E402
 from app.database import AsyncSessionLocal, engine  # noqa: E402
-from app.models import Room, RoomImage, User  # noqa: E402
+from app.models import AdminUser, Room, RoomImage, User  # noqa: E402
 from app.models.room import RoomStatus, RoomType  # noqa: E402
 from app.models.user import UserRole  # noqa: E402
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 ROOMS_SEED: list[dict] = [
     # STANDARD x5 — A101–A105
@@ -38,6 +36,14 @@ ROOMS_SEED: list[dict] = [
     # VIP x2 — D401–D402
     {"room_number": "D401", "room_type": RoomType.VIP, "capacity": 4, "price_per_night": Decimal("1500000"), "description": "VIP suite presidential floor", "status": RoomStatus.AVAILABLE},
     {"room_number": "D402", "room_type": RoomType.VIP, "capacity": 4, "price_per_night": Decimal("2000000"), "description": "VIP penthouse suite", "status": RoomStatus.AVAILABLE},
+]
+
+ADMIN_USERS_SEED: list[dict] = [
+    {
+        "username": "admin",
+        "password": "admin123",
+        "is_active": True,
+    },
 ]
 
 USERS_SEED: list[dict] = [
@@ -115,6 +121,26 @@ async def seed_rooms(session) -> int:
     return inserted
 
 
+async def seed_admin_users(session) -> int:
+    """Insert admin portal accounts that do not yet exist (by username)."""
+    inserted = 0
+    for data in ADMIN_USERS_SEED:
+        exists = await session.scalar(
+            select(AdminUser.id).where(AdminUser.username == data["username"])
+        )
+        if exists:
+            continue
+        session.add(
+            AdminUser(
+                username=data["username"],
+                hashed_password=hash_password(data["password"]),
+                is_active=data["is_active"],
+            )
+        )
+        inserted += 1
+    return inserted
+
+
 async def seed_users(session) -> int:
     """Insert users that do not yet exist (by email). Returns count inserted."""
     inserted = 0
@@ -127,7 +153,7 @@ async def seed_users(session) -> int:
                 full_name=data["full_name"],
                 email=data["email"],
                 phone=data["phone"],
-                password_hash=pwd_context.hash(data["password"]),
+                password_hash=hash_password(data["password"]),
                 role=data["role"],
             )
         )
@@ -140,10 +166,11 @@ async def main() -> None:
     async with AsyncSessionLocal() as session:
         await seed_rooms(session)
         await seed_users(session)
+        await seed_admin_users(session)
         await seed_room_images(session)
         await session.commit()
 
-    print("✓ Seeded 15 rooms, 2 users, sample room images")
+    print("✓ Seeded 15 rooms, 2 users, 1 admin portal account, sample room images")
     await engine.dispose()
 
 

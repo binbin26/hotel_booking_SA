@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Residences — Track Your Reservation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vietnamese text rendering optimization CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', path='global.css') }}" />
+  <!-- Vietnamese text Unicode normalization JavaScript -->
+  <script src="{{ url_for('static', path='vietnamese-text-normalizer.js') }}" defer></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            charcoal: '#313131',
+            cream: '#F3EEE7',
+            'mid-gray': '#82847F',
+            'light-border': '#DBDBDB',
+            'dark-gray': '#55565B',
+            accent: '#007DFA',
+            gold: '#ACCEF0',
+          },
+          fontFamily: {
+            display: ['"Lyon Display Web"', 'Georgia', 'serif'],
+            serif: ['"Lyon Text Web"', 'Georgia', 'serif'],
+            sans: ['WhitneySSm', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+          },
+          transitionTimingFunction: {
+            aman: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          },
+          fontSize: {
+            'display-hero': ['40px', { lineHeight: '58px' }],
+            h3: ['20px', { lineHeight: '28px' }],
+            'form-label': ['10px', { lineHeight: '14px' }],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      --ease-aman: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --charcoal: #313131;
+      --cream: #f3eee7;
+    }
+
+    * { border-radius: 0 !important; }
+
+    .btn-primary {
+      transition: background-color 250ms var(--ease-aman),
+        color 250ms var(--ease-aman),
+        transform 150ms var(--ease-aman);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: #000;
+      color: #fff;
+    }
+
+    .btn-primary:active:not(:disabled) {
+      transform: scale(0.98);
+      background-color: #55565b;
+    }
+
+    .fade-rise {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 800ms var(--ease-aman), transform 800ms var(--ease-aman);
+    }
+
+    .fade-rise.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .inline-alert {
+      border: 1px solid #000;
+      transition: opacity 400ms var(--ease-aman);
+    }
+
+    .status-badge {
+      letter-spacing: 0.08em;
+    }
+
+    .hero-serene::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+    }
+
+    .field-input {
+      transition: border-color 250ms var(--ease-aman);
+    }
+
+    .field-input:focus {
+      outline: none;
+      border-color: var(--charcoal);
+    }
+  </style>
+</head>
+<body class="bg-white text-charcoal font-sans antialiased min-h-screen flex flex-col">
+
+  <div class="fixed inset-0 -z-10 hero-serene" aria-hidden="true">
+    <img
+      src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=2400&q=80"
+      alt=""
+      class="w-full h-full object-cover"
+      width="2400"
+      height="1400"
+    />
+  </div>
+
+  <header class="relative z-10 bg-white/95 backdrop-blur-sm border-b border-light-border">
+    <div class="mx-auto max-w-[600px] px-4 md:px-6 py-4 flex items-center justify-between">
+      <a href="/" class="font-display text-sm text-charcoal hover:text-black transition-colors duration-[250ms] ease-aman">
+        Residences
+      </a>
+      <p class="font-serif text-form-label text-mid-gray tracking-wide">Manage reservation</p>
+    </div>
+  </header>
+
+  <main class="relative z-10 flex-1 flex flex-col items-center justify-center px-4 md:px-6 py-10 md:py-16">
+    <div class="w-full max-w-[600px]">
+
+      <h1 class="fade-rise font-display text-display-hero text-[28px] md:text-[40px] leading-tight md:leading-[58px] text-charcoal text-center mb-8 md:mb-10">
+        Track Your Reservation
+      </h1>
+
+      <!-- State 1: Input form -->
+      <section
+        id="state-form"
+        class="fade-rise bg-cream p-8 md:p-10 shadow-[0_4px_12px_rgba(0,0,0,0.15)]"
+        aria-label="Find your reservation"
+      >
+        <p class="font-sans text-sm text-mid-gray mb-8 leading-5">
+          Enter your booking reference and the email address used at checkout.
+        </p>
+
+        <div
+          id="form-alert"
+          class="hidden inline-alert text-charcoal px-4 py-3 mb-6 font-sans text-sm"
+          role="alert"
+        ></div>
+
+        <form id="track-form" class="space-y-6" novalidate>
+          <div>
+            <label for="booking_id" class="font-serif text-form-label text-charcoal block pb-2 uppercase tracking-widest">
+              Booking Reference Number
+            </label>
+            <input
+              type="number"
+              id="booking_id"
+              name="booking_id"
+              required
+              min="1"
+              inputmode="numeric"
+              placeholder="e.g. 42"
+              class="field-input w-full min-h-[44px] px-4 border border-light-border bg-white font-sans text-sm text-charcoal"
+            />
+          </div>
+
+          <div>
+            <label for="guest_email" class="font-serif text-form-label text-charcoal block pb-2 uppercase tracking-widest">
+              Email Address
+            </label>
+            <input
+              type="email"
+              id="guest_email"
+              name="guest_email"
+              required
+              autocomplete="email"
+              placeholder="you@example.com"
+              class="field-input w-full min-h-[44px] px-4 border border-light-border bg-white font-sans text-sm text-charcoal"
+            />
+          </div>
+
+          <button
+            type="submit"
+            id="track-submit-btn"
+            class="btn-primary w-full inline-flex items-center justify-center min-h-[44px] h-[42px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm disabled:bg-light-border disabled:text-mid-gray disabled:border-light-border"
+          >
+            <span id="track-btn-label">Find Reservation</span>
+            <span id="track-btn-loading" class="hidden">Searching…</span>
+          </button>
+        </form>
+
+        <div class="mt-8 text-center">
+          <a
+            href="/"
+            class="font-sans text-sm text-charcoal underline decoration-charcoal underline-offset-4 hover:text-black transition-colors duration-[250ms] ease-aman min-h-[44px] inline-flex items-center justify-center"
+          >
+            Return home
+          </a>
+        </div>
+      </section>
+
+      <!-- State 2: Result -->
+      <section
+        id="state-result"
+        class="hidden fade-rise"
+        aria-label="Reservation details"
+      >
+        <p class="fade-rise text-center font-serif text-form-label text-mid-gray mb-2">
+          Reference
+        </p>
+        <p id="result-reference" class="fade-rise text-center font-display text-h3 text-charcoal mb-8">
+          —
+        </p>
+
+        <article class="fade-rise bg-cream p-8 md:p-10 shadow-[0_4px_12px_rgba(0,0,0,0.15)] mb-8">
+          <div class="flex flex-wrap items-center justify-between gap-4 mb-8 pb-6 border-b border-light-border">
+            <span class="font-serif text-form-label text-mid-gray uppercase tracking-widest">Your stay</span>
+            <span id="result-status-badge" class="status-badge font-sans text-form-label text-charcoal border border-charcoal px-3 py-1">
+              Status: —
+            </span>
+          </div>
+
+          <dl id="result-details" class="space-y-4 font-sans text-sm text-charcoal">
+            <!-- populated by JS -->
+          </dl>
+
+          <div class="mt-8 pt-6 border-t border-light-border flex justify-between items-baseline gap-4">
+            <span class="font-serif text-form-label text-charcoal">Total</span>
+            <span id="result-total" class="font-serif text-h3 text-charcoal">—</span>
+          </div>
+        </article>
+
+        <div class="text-center space-y-4">
+          <button
+            type="button"
+            id="search-again-btn"
+            class="btn-primary inline-flex items-center justify-center min-h-[44px] h-[42px] px-8 border border-charcoal bg-charcoal text-cream font-sans text-sm"
+          >
+            Search again
+          </button>
+          <div>
+            <a
+              href="/"
+              class="font-sans text-sm text-charcoal underline decoration-charcoal underline-offset-4 hover:text-black transition-colors duration-[250ms] ease-aman min-h-[44px] inline-flex items-center justify-center"
+            >
+              Return home
+            </a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="relative z-10 border-t border-light-border bg-white/95 py-10 mt-auto">
+    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8 mb-10">
+        <div>
+          <p class="font-display text-sm text-charcoal mb-4">Residences</p>
+          <p class="font-sans text-sm text-mid-gray leading-5">
+            395/18 Diên Hồng,<br />TP Hồ Chí Minh
+          </p>
+        </div>
+        <div>
+          <p class="font-serif text-form-label text-charcoal uppercase tracking-widest mb-4">Contact</p>
+          <ul class="space-y-2 font-sans text-sm text-charcoal">
+            <li><a href="tel:0372863000" class="nav-link">0372863***</a></li>
+            <li><a href="mailto:admin@gmail.com" class="nav-link">admin@gmail.com</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="font-serif text-form-label text-charcoal uppercase tracking-widest mb-4">Information</p>
+          <ul class="space-y-2 font-sans text-sm">
+            <li><a href="#" class="nav-link text-charcoal">Terms &amp; Conditions</a></li>
+            <li><a href="#" class="nav-link text-charcoal">Privacy Policy</a></li>
+            <li><a href="#" class="nav-link text-charcoal">FAQs</a></li>
+          </ul>
+        </div>
+        <div class="sm:col-span-2 lg:col-span-1 flex flex-col justify-end">
+          <p class="font-sans text-form-label text-mid-gray">&copy; {{ current_year | default(2026) }} All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const API_BASE = "{{ api_base_url | default('') }}";
+
+      const els = {
+        stateForm: document.getElementById('state-form'),
+        stateResult: document.getElementById('state-result'),
+        trackForm: document.getElementById('track-form'),
+        bookingIdInput: document.getElementById('booking_id'),
+        guestEmailInput: document.getElementById('guest_email'),
+        formAlert: document.getElementById('form-alert'),
+        trackSubmitBtn: document.getElementById('track-submit-btn'),
+        trackBtnLabel: document.getElementById('track-btn-label'),
+        trackBtnLoading: document.getElementById('track-btn-loading'),
+        resultReference: document.getElementById('result-reference'),
+        resultStatusBadge: document.getElementById('result-status-badge'),
+        resultDetails: document.getElementById('result-details'),
+        resultTotal: document.getElementById('result-total'),
+        searchAgainBtn: document.getElementById('search-again-btn'),
+      };
+
+      function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', {
+          style: 'currency',
+          currency: 'VND',
+          maximumFractionDigits: 0,
+        }).format(amount || 0);
+      }
+
+      function formatDisplayDate(iso) {
+        if (!iso) return '—';
+        const [y, m, d] = iso.split('-').map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        });
+      }
+
+      function formatRoomType(type) {
+        if (!type) return 'Residence';
+        return type.charAt(0) + type.slice(1).toLowerCase().replace(/_/g, ' ');
+      }
+
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = String(str ?? '');
+        return div.innerHTML;
+      }
+
+      function hideFormAlert() {
+        els.formAlert.classList.add('hidden');
+        els.formAlert.textContent = '';
+      }
+
+      function showFormAlert(message) {
+        els.formAlert.textContent = message;
+        els.formAlert.classList.remove('hidden');
+      }
+
+      function setSubmitting(loading) {
+        els.trackSubmitBtn.disabled = loading;
+        els.trackBtnLabel.classList.toggle('hidden', loading);
+        els.trackBtnLoading.classList.toggle('hidden', !loading);
+      }
+
+      function revealFadeElements(container) {
+        requestAnimationFrame(() => {
+          container.querySelectorAll('.fade-rise').forEach((el) => {
+            el.classList.add('is-visible');
+          });
+        });
+      }
+
+      function buildStatusLabel(booking) {
+        const status = booking.status || 'PENDING';
+        const paymentStatus = booking.payment_status || '';
+        if (paymentStatus === 'PAID' || status === 'CONFIRMED') {
+          return 'Status: CONFIRMED · Paid';
+        }
+        if (paymentStatus === 'UNPAID') {
+          return `Status: ${status} · Unpaid`;
+        }
+        return `Status: ${status}`;
+      }
+
+      function renderResult(booking) {
+        const ref = booking.booking_id ?? booking.id;
+        els.resultReference.textContent = `#${ref}`;
+
+        const room = booking.room || {};
+        const roomLabel = room.room_number
+          ? `${formatRoomType(room.room_type)} · ${room.room_number}`
+          : formatRoomType(room.room_type);
+
+        const rows = [
+          ['Guest', booking.customer?.full_name || '—'],
+          ['Email', booking.customer?.email || '—'],
+          ['Residence', roomLabel],
+          ['Check-in', formatDisplayDate(booking.check_in)],
+          ['Check-out', formatDisplayDate(booking.check_out)],
+          [
+            'Nights',
+            booking.total_nights != null ? String(booking.total_nights) : '—',
+          ],
+        ];
+
+        els.resultDetails.innerHTML = rows
+          .map(
+            ([dt, dd]) => `
+          <div class="flex justify-between gap-4">
+            <dt class="text-mid-gray shrink-0">${escapeHtml(dt)}</dt>
+            <dd class="text-right">${escapeHtml(dd)}</dd>
+          </div>`
+          )
+          .join('');
+
+        els.resultTotal.textContent = formatCurrency(booking.total_price);
+        els.resultStatusBadge.textContent = buildStatusLabel(booking);
+      }
+
+      function showFormState() {
+        els.stateForm.classList.remove('hidden');
+        els.stateResult.classList.add('hidden');
+        hideFormAlert();
+        revealFadeElements(els.stateForm);
+      }
+
+      function showResultState(booking) {
+        renderResult(booking);
+        els.stateForm.classList.add('hidden');
+        els.stateResult.classList.remove('hidden');
+        els.stateResult.querySelectorAll('.fade-rise').forEach((el) => {
+          el.classList.remove('is-visible');
+        });
+        revealFadeElements(els.stateResult);
+      }
+
+      async function trackBooking(bookingId, guestEmail) {
+        hideFormAlert();
+        setSubmitting(true);
+
+        const params = new URLSearchParams({
+          booking_id: String(bookingId),
+          guest_email: guestEmail.trim().toLowerCase(),
+        });
+
+        try {
+          const response = await fetch(
+            `${API_BASE}/bookings/track?${params.toString()}`,
+            { headers: { Accept: 'application/json' } }
+          );
+
+          let payload = null;
+          try {
+            payload = await response.json();
+          } catch {
+            payload = null;
+          }
+
+          if (!response.ok || payload?.success === false) {
+            throw new Error(
+              payload?.message ||
+                `Reservation not found (${response.status}).`
+            );
+          }
+
+          const booking = payload?.data;
+          if (!booking) {
+            throw new Error('Invalid reservation data received.');
+          }
+
+          showResultState(booking);
+        } catch (err) {
+          showFormAlert(
+            err instanceof Error
+              ? err.message
+              : 'An unexpected error occurred. Please try again.'
+          );
+        } finally {
+          setSubmitting(false);
+        }
+      }
+
+      function prefillFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const bookingId = params.get('booking_id');
+        const guestEmail = params.get('guest_email');
+
+        if (bookingId) {
+          els.bookingIdInput.value = bookingId;
+        }
+        if (guestEmail) {
+          els.guestEmailInput.value = guestEmail;
+        }
+
+        if (bookingId && guestEmail) {
+          trackBooking(bookingId, guestEmail);
+        }
+      }
+
+      els.trackForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const bookingId = els.bookingIdInput.value.trim();
+        const guestEmail = els.guestEmailInput.value.trim();
+
+        if (!bookingId || Number(bookingId) <= 0) {
+          showFormAlert('Please enter a valid booking reference number.');
+          return;
+        }
+        if (!guestEmail || !guestEmail.includes('@')) {
+          showFormAlert('Please enter a valid email address.');
+          return;
+        }
+
+        trackBooking(bookingId, guestEmail);
+      });
+
+      els.searchAgainBtn.addEventListener('click', () => {
+        showFormState();
+      });
+
+      revealFadeElements(els.stateForm);
+      prefillFromUrl();
+    })();
+  </script>
+</body>
+</html>

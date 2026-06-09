@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Residences — Room Detail</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vietnamese text rendering optimization CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', path='global.css') }}" />
+  <!-- Vietnamese text Unicode normalization JavaScript -->
+  <script src="{{ url_for('static', path='vietnamese-text-normalizer.js') }}" defer></script>
+  
   <script>
     tailwind.config = {
       theme: {
@@ -272,6 +277,43 @@
             <form id="booking-form" class="space-y-8" novalidate>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 <div class="relative field-valid">
+                  <label for="form_guest_name" class="font-serif text-form-label text-charcoal block pb-2">Full Name</label>
+                  <input
+                    type="text"
+                    id="form_guest_name"
+                    name="guest_name"
+                    required
+                    class="form-input input-focus-line w-full bg-white text-black font-sans text-base px-[7px] py-2 min-h-[44px] border-0 border-b border-light-border"
+                  />
+                  <p id="err_guest_name" class="hidden mt-2 font-sans text-form-label text-charcoal" role="alert"></p>
+                </div>
+                <div class="relative field-valid">
+                  <label for="form_guest_email" class="font-serif text-form-label text-charcoal block pb-2">Email</label>
+                  <input
+                    type="email"
+                    id="form_guest_email"
+                    name="guest_email"
+                    required
+                    class="form-input input-focus-line w-full bg-white text-black font-sans text-base px-[7px] py-2 min-h-[44px] border-0 border-b border-light-border"
+                  />
+                  <p id="err_guest_email" class="hidden mt-2 font-sans text-form-label text-charcoal" role="alert"></p>
+                </div>
+              </div>
+
+              <div class="relative field-valid max-w-md">
+                <label for="form_guest_phone" class="font-serif text-form-label text-charcoal block pb-2">Phone Number</label>
+                <input
+                  type="tel"
+                  id="form_guest_phone"
+                  name="guest_phone"
+                  required
+                  class="form-input input-focus-line w-full bg-white text-black font-sans text-base px-[7px] py-2 min-h-[44px] border-0 border-b border-light-border"
+                />
+                <p id="err_guest_phone" class="hidden mt-2 font-sans text-form-label text-charcoal" role="alert"></p>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div class="relative field-valid">
                   <label for="form_check_in" class="font-serif text-form-label text-charcoal block pb-2">Check-in</label>
                   <input
                     type="date"
@@ -312,7 +354,6 @@
               </div>
 
               <input type="hidden" id="form_room_id" name="room_id" />
-              <input type="hidden" id="form_user_id" name="user_id" value="{{ mock_user_id | default(1) }}" />
 
               <div class="pt-4">
                 <button
@@ -341,9 +382,33 @@
   </div>
 
   <footer class="border-t border-light-border py-10">
-    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10 flex flex-col md:flex-row justify-between gap-4">
-      <p class="font-display text-sm text-charcoal">Residences</p>
-      <p class="font-sans text-form-label text-mid-gray">&copy; {{ current_year | default(2026) }} All rights reserved.</p>
+    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8 mb-10">
+        <div>
+          <p class="font-display text-sm text-charcoal mb-4">Residences</p>
+          <p class="font-sans text-sm text-mid-gray leading-5">
+            395/18 Diên Hồng,<br />TP Hồ Chí Minh
+          </p>
+        </div>
+        <div>
+          <p class="font-serif text-form-label text-charcoal uppercase tracking-widest mb-4">Contact</p>
+          <ul class="space-y-2 font-sans text-sm text-charcoal">
+            <li><a href="tel:0372863000" class="nav-link">0372863***</a></li>
+            <li><a href="mailto:admin@gmail.com" class="nav-link">admin@gmail.com</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="font-serif text-form-label text-charcoal uppercase tracking-widest mb-4">Information</p>
+          <ul class="space-y-2 font-sans text-sm">
+            <li><a href="#" class="nav-link text-charcoal">Terms &amp; Conditions</a></li>
+            <li><a href="#" class="nav-link text-charcoal">Privacy Policy</a></li>
+            <li><a href="#" class="nav-link text-charcoal">FAQs</a></li>
+          </ul>
+        </div>
+        <div class="sm:col-span-2 lg:col-span-1 flex flex-col justify-end">
+          <p class="font-sans text-form-label text-mid-gray">&copy; {{ current_year | default(2026) }} All rights reserved.</p>
+        </div>
+      </div>
     </div>
   </footer>
 
@@ -407,10 +472,12 @@
         orderSummaryMobile: document.getElementById('order-summary-mobile'),
         orderSummaryDesktop: document.getElementById('order-summary-desktop'),
         form: document.getElementById('booking-form'),
+        formGuestName: document.getElementById('form_guest_name'),
+        formGuestEmail: document.getElementById('form_guest_email'),
+        formGuestPhone: document.getElementById('form_guest_phone'),
         formCheckIn: document.getElementById('form_check_in'),
         formCheckOut: document.getElementById('form_check_out'),
         formRoomId: document.getElementById('form_room_id'),
-        formUserId: document.getElementById('form_user_id'),
         paymentMethod: document.getElementById('payment_method'),
         bookingAlert: document.getElementById('booking-alert'),
         submitBtn: document.getElementById('submit-booking'),
@@ -518,11 +585,17 @@
 
       function setFieldError(fieldId, message) {
         const errMap = {
+          guest_name: 'err_guest_name',
+          guest_email: 'err_guest_email',
+          guest_phone: 'err_guest_phone',
           check_in: 'err_check_in',
           check_out: 'err_check_out',
           payment_method: 'err_payment_method',
         };
         const inputMap = {
+          guest_name: els.formGuestName,
+          guest_email: els.formGuestEmail,
+          guest_phone: els.formGuestPhone,
           check_in: els.formCheckIn,
           check_out: els.formCheckOut,
           payment_method: els.paymentMethod,
@@ -539,16 +612,37 @@
       }
 
       function clearFormErrors() {
-        ['check_in', 'check_out', 'payment_method'].forEach((f) => setFieldError(f, ''));
+        ['guest_name', 'guest_email', 'guest_phone', 'check_in', 'check_out', 'payment_method'].forEach((f) => setFieldError(f, ''));
         hideBookingAlert();
       }
 
       function validateForm() {
         clearFormErrors();
         let valid = true;
+        const guestName = els.formGuestName.value.trim();
+        const guestEmail = els.formGuestEmail.value.trim();
+        const guestPhone = els.formGuestPhone.value.trim();
         const checkIn = els.formCheckIn.value;
         const checkOut = els.formCheckOut.value;
         const today = parseISO(todayISO());
+
+        if (!guestName) {
+          setFieldError('guest_name', 'Please enter your full name.');
+          valid = false;
+        }
+
+        if (!guestEmail) {
+          setFieldError('guest_email', 'Please enter your email address.');
+          valid = false;
+        } else if (!guestEmail.includes('@') || !guestEmail.includes('.')) {
+          setFieldError('guest_email', 'Please enter a valid email address.');
+          valid = false;
+        }
+
+        if (!guestPhone) {
+          setFieldError('guest_phone', 'Please enter your phone number.');
+          valid = false;
+        }
 
         if (!checkIn) {
           setFieldError('check_in', 'Please select a check-in date.');
@@ -828,15 +922,19 @@
         const checkIn = els.formCheckIn.value;
         const checkOut = els.formCheckOut.value;
         const paymentMethod = els.paymentMethod.value;
-        const userId = Number(els.formUserId.value) || MOCK_USER_ID;
+        const guestName = els.formGuestName.value.trim();
+        const guestEmail = els.formGuestEmail.value.trim();
+        const guestPhone = els.formGuestPhone.value.trim();
         const roomId = Number(els.formRoomId.value);
 
         const body = {
-          user_id: userId,
           room_id: roomId,
           check_in: checkIn,
           check_out: checkOut,
           payment_method: paymentMethod,
+          guest_name: guestName,
+          guest_email: guestEmail,
+          guest_phone: guestPhone,
         };
 
         setSubmitting(true);

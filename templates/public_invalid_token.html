@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Residences — Link Expired</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vietnamese text rendering optimization CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', path='global.css') }}" />
+  <!-- Vietnamese text Unicode normalization JavaScript -->
+  <script src="{{ url_for('static', path='vietnamese-text-normalizer.js') }}" defer></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            charcoal: '#313131',
+            cream: '#F3EEE7',
+            'mid-gray': '#82847F',
+            'light-border': '#DBDBDB',
+          },
+          fontFamily: {
+            display: ['Georgia', 'serif'],
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>* { border-radius: 0 !important; }</style>
+</head>
+<body class="bg-cream text-charcoal font-sans antialiased min-h-screen flex flex-col">
+  <main class="flex-1 flex items-center justify-center px-6 py-24">
+    <div class="max-w-md w-full text-center border border-light-border bg-white p-12">
+      <p class="text-[10px] uppercase tracking-[0.15em] text-mid-gray mb-4">Residences</p>
+      <h1 class="font-display text-3xl font-normal mb-4">Link Expired or Invalid</h1>
+      <p class="text-mid-gray text-sm leading-relaxed mb-8">
+        This reservation link is no longer valid. It may have expired or been entered incorrectly.
+        Please check your email for the latest invoice, or contact our concierge for assistance.
+      </p>
+      <a href="/" class="inline-block px-8 py-3 bg-charcoal text-cream text-xs uppercase tracking-widest hover:bg-black transition-colors">
+        Return Home
+      </a>
+    </div>
+  </main>
+  <footer class="text-center text-xs text-mid-gray py-8">
+    &copy; {{ current_year }} Residences. All rights reserved.
+  </footer>
+</body>
+</html>

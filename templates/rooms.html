@@ -1,10 +1,15 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="{{ current_locale | default('en') }}" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Residences — Available Rooms</title>
+  <title>{{ _("Residences — Available Rooms") }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vietnamese text rendering optimization CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', path='global.css') }}" />
+  <!-- Vietnamese text Unicode normalization JavaScript -->
+  <script src="{{ url_for('static', path='vietnamese-text-normalizer.js') }}" defer></script>
+  
   <script>
     tailwind.config = {
       theme: {
@@ -133,28 +138,30 @@
     }
   </style>
 </head>
-<body class="bg-white text-charcoal font-sans antialiased page-blur" id="page-root">
+<body class="bg-white text-charcoal font-sans antialiased">
+
+  <div id="page-root" class="page-blur transition-all duration-400">
 
   <!-- Header -->
   <header class="sticky top-0 z-30 bg-white border-b border-light-border">
     <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10">
       <div class="flex items-center justify-between py-4 md:py-5">
-        <a href="/" class="font-display text-sm md:text-base text-charcoal nav-link no-underline">Residences</a>
+        <a href="/" class="font-display text-sm md:text-base text-charcoal nav-link no-underline">{{ _("Residences") }}</a>
         <a
           href="/"
           class="font-sans text-sm text-charcoal underline decoration-charcoal underline-offset-4 hover:text-black transition-colors duration-[250ms] ease-aman min-h-[44px] inline-flex items-center"
         >
-          Modify search
+          {{ _("Modify search") }}
         </a>
       </div>
     </div>
   </header>
 
   <!-- Search summary -->
-  <section class="bg-cream border-b border-light-border" aria-label="Search criteria">
+  <section class="bg-cream border-b border-light-border" aria-label="{{ _('Search criteria') }}">
     <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10 py-8 md:py-10 reveal">
-      <p class="font-serif text-form-label text-mid-gray uppercase tracking-widest mb-3">Your journey</p>
-      <h1 class="font-serif text-h2 text-charcoal mb-4">Available residences</h1>
+      <p class="font-serif text-form-label text-mid-gray uppercase tracking-widest mb-3">{{ _("Your journey") }}</p>
+      <h1 class="font-serif text-h2 text-charcoal mb-4">{{ _("Available residences") }}</h1>
       <p id="search-summary" class="font-sans text-sm md:text-base text-charcoal leading-5 md:leading-6">
         <!-- populated by JS -->
       </p>
@@ -166,21 +173,21 @@
     <!-- Missing params -->
     <div id="state-params" class="hidden px-4 md:px-6 lg:px-10 py-13 md:py-20" role="alert">
       <p class="font-sans text-base text-charcoal mb-6 max-w-[600px]">
-        Please provide check-in, check-out, and guest count to search for available rooms.
+        {{ _("Please provide check-in, check-out, and guest count to search for available rooms.") }}
       </p>
       <a
         href="/"
         class="btn-primary inline-flex items-center justify-center min-h-[44px] h-[42px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm"
       >
-        Return home
+        {{ _("Return home") }}
       </a>
     </div>
 
     <!-- Loading -->
     <div id="state-loading" class="hidden" aria-live="polite" aria-busy="true">
-      <p class="sr-only">Loading available rooms</p>
+      <p class="sr-only">{{ _("Loading available rooms") }}</p>
       <div class="space-y-0">
-        {% for _ in range(2) %}
+        {% for i in range(2) %}
         <article class="border-b border-light-border">
           <div class="skeleton w-full aspect-[16/10] md:aspect-[21/9]"></div>
           <div class="px-4 md:px-6 lg:px-10 py-8 md:py-10 space-y-4">
@@ -196,34 +203,34 @@
 
     <!-- Error -->
     <div id="state-error" class="hidden px-4 md:px-6 lg:px-10 py-13 md:py-20" role="alert">
-      <p class="font-serif text-h3 text-charcoal mb-3">Unable to load residences</p>
+      <p class="font-serif text-h3 text-charcoal mb-3">{{ _("Unable to load residences") }}</p>
       <p id="error-message" class="font-sans text-sm text-charcoal mb-8 max-w-[600px] leading-5"></p>
       <button
         type="button"
         id="retry-btn"
         class="btn-primary inline-flex items-center justify-center min-h-[44px] h-[42px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm mr-4"
       >
-        Try again
+        {{ _("Try again") }}
       </button>
       <a
         href="/"
         class="font-sans text-sm text-charcoal underline decoration-charcoal underline-offset-4 hover:text-black min-h-[44px] inline-flex items-center"
       >
-        Modify search
+        {{ _("Modify search") }}
       </a>
     </div>
 
     <!-- Empty -->
     <div id="state-empty" class="hidden px-4 md:px-6 lg:px-10 py-13 md:py-20 text-center md:text-left">
-      <p class="font-serif text-h3 text-charcoal mb-4">No residences available</p>
+      <p class="font-serif text-h3 text-charcoal mb-4">{{ _("No residences available") }}</p>
       <p class="font-sans text-sm text-mid-gray mb-8 max-w-[600px] mx-auto md:mx-0 leading-5">
-        We could not find availability for your selected dates. Please adjust your stay or contact us for assistance.
+        {{ _("We could not find availability for your selected dates. Please adjust your stay or contact us for assistance.") }}
       </p>
       <a
         href="/"
         class="btn-primary inline-flex items-center justify-center min-h-[44px] h-[42px] px-6 border border-charcoal bg-charcoal text-cream font-sans text-sm"
       >
-        Modify search
+        {{ _("Modify search") }}
       </a>
     </div>
 
@@ -233,11 +240,37 @@
   </main>
 
   <footer class="border-t border-light-border py-10 mt-13">
-    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10 flex flex-col md:flex-row justify-between gap-4">
-      <p class="font-display text-sm text-charcoal">Residences</p>
-      <p class="font-sans text-form-label text-mid-gray">&copy; {{ current_year | default(2026) }} All rights reserved.</p>
+    <div class="mx-auto max-w-content px-4 md:px-6 lg:px-10">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8 mb-10">
+        <div>
+          <p class="font-display text-sm text-charcoal mb-4">{{ _("Residences") }}</p>
+          <p class="font-sans text-sm text-mid-gray leading-5">
+            395/18 Diên Hồng,<br />TP Hồ Chí Minh
+          </p>
+        </div>
+        <div>
+          <p class="font-serif text-form-label text-charcoal uppercase tracking-widest mb-4">{{ _("Contact") }}</p>
+          <ul class="space-y-2 font-sans text-sm text-charcoal">
+            <li><a href="tel:0372863000" class="nav-link">0372863***</a></li>
+            <li><a href="mailto:admin@gmail.com" class="nav-link">admin@gmail.com</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="font-serif text-form-label text-charcoal uppercase tracking-widest mb-4">{{ _("Information") }}</p>
+          <ul class="space-y-2 font-sans text-sm">
+            <li><a href="#" class="nav-link text-charcoal">{{ _("Terms & Conditions") }}</a></li>
+            <li><a href="#" class="nav-link text-charcoal">{{ _("Privacy Policy") }}</a></li>
+            <li><a href="#" class="nav-link text-charcoal">{{ _("FAQs") }}</a></li>
+          </ul>
+        </div>
+        <div class="sm:col-span-2 lg:col-span-1 flex flex-col justify-end">
+          <p class="font-sans text-form-label text-mid-gray">&copy; {{ current_year | default(2026) }} {{ _("All rights reserved.") }}</p>
+        </div>
+      </div>
     </div>
   </footer>
+
+  </div><!-- /#page-root -->
 
   <!-- Lightbox -->
   <div
@@ -245,14 +278,14 @@
     class="fixed inset-0 z-[60] lightbox is-closed flex items-center justify-center bg-black/90 p-4"
     role="dialog"
     aria-modal="true"
-    aria-label="Room image gallery"
+    aria-label="{{ _('Room image gallery') }}"
     aria-hidden="true"
   >
     <button
       type="button"
       id="lightbox-close"
       class="absolute top-4 right-4 md:top-8 md:right-8 min-h-[44px] min-w-[44px] text-cream font-display text-3xl leading-none z-10"
-      aria-label="Close gallery"
+      aria-label="{{ _('Close gallery') }}"
     >
       &times;
     </button>
@@ -271,6 +304,17 @@
 
       const API_BASE = "{{ api_base_url | default('') }}";
       const ROOM_DETAIL_PATH = "{{ room_detail_path | default('/rooms') }}";
+      const I18N = {{ js_translations | tojson }};
+      const PAGE_LOCALE = "{{ current_locale | default('en') }}";
+
+      function t(key, vars) {
+        let text = I18N[key] || key;
+        if (!vars) return text;
+        Object.keys(vars).forEach((name) => {
+          text = text.replace(new RegExp('%\\(' + name + '\\)s', 'g'), String(vars[name]));
+        });
+        return text;
+      }
 
       const ROOM_IMAGES = {
         DELUXE: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=2400&q=80',
@@ -312,7 +356,8 @@
       }
 
       function formatDisplayDate(iso) {
-        return parseISO(iso).toLocaleDateString(undefined, {
+        const locale = PAGE_LOCALE === 'vi' ? 'vi-VN' : 'en-US';
+        return parseISO(iso).toLocaleDateString(locale, {
           weekday: 'short',
           month: 'short',
           day: 'numeric',
@@ -329,7 +374,7 @@
       }
 
       function formatRoomType(type) {
-        if (!type) return 'Residence';
+        if (!type) return t('Residence');
         return type.charAt(0) + type.slice(1).toLowerCase().replace(/_/g, ' ');
       }
 
@@ -348,9 +393,12 @@
       function updateSearchSummary() {
         const { check_in, check_out, guests } = searchParams;
         const nights = Math.round((parseISO(check_out) - parseISO(check_in)) / 86400000);
-        const guestLabel = Number(guests) === 1 ? '1 guest' : `${guests} guests`;
+        const guestLabel = Number(guests) === 1
+          ? t('1 guest')
+          : t('%(count)s guests', { count: guests });
+        const nightLabel = nights === 1 ? t('night') : t('nights');
         els.searchSummary.textContent =
-          `${formatDisplayDate(check_in)} — ${formatDisplayDate(check_out)} · ${nights} night${nights !== 1 ? 's' : ''} · ${guestLabel}`;
+          `${formatDisplayDate(check_in)} — ${formatDisplayDate(check_out)} · ${nights} ${nightLabel} · ${guestLabel}`;
       }
 
       function showState(state) {
@@ -396,20 +444,20 @@
         const imageUrl = getRoomImage(room);
         const roomTitle = `${formatRoomType(room.room_type)} · ${room.room_number || ''}`.trim();
         const specs = [
-          room.capacity ? `Up to ${room.capacity} guests` : null,
+          room.capacity ? t('Up to %(capacity)s guests', { capacity: room.capacity }) : null,
           room.total_nights
-            ? `${room.total_nights} night${room.total_nights !== 1 ? 's' : ''}`
+            ? `${room.total_nights} ${room.total_nights === 1 ? t('night') : t('nights')}`
             : null,
-          room.status === 'AVAILABLE' ? 'Available' : room.status,
+          room.status === 'AVAILABLE' ? t('Available') : room.status,
         ]
           .filter(Boolean)
           .join(' · ');
 
         const pricePerNight = room.price_per_night
-          ? `${formatCurrency(room.price_per_night)} / night`
+          ? `${formatCurrency(room.price_per_night)} ${t('/ night')}`
           : '';
         const totalPrice = room.estimated_total_price
-          ? `Estimated total ${formatCurrency(room.estimated_total_price)}`
+          ? t('Estimated total %(amount)s', { amount: formatCurrency(room.estimated_total_price) })
           : '';
 
         const article = document.createElement('article');
@@ -422,7 +470,7 @@
             class="room-image-trigger block w-full text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-charcoal"
             data-image="${escapeHtml(imageUrl)}"
             data-caption="${escapeHtml(roomTitle)}"
-            aria-label="View larger image of ${escapeHtml(roomTitle)}"
+            aria-label="${escapeHtml(t('View larger image of %(title)s', { title: roomTitle }))}"
           >
             <div class="room-image-wrap w-full overflow-hidden aspect-[4/3] md:aspect-[21/9]">
               <img
@@ -448,7 +496,7 @@
               href="${escapeHtml(buildDetailUrl(room.id))}"
               class="btn-primary inline-flex items-center justify-center min-h-[44px] h-[42px] px-[15px] py-[10px] border border-charcoal bg-charcoal text-cream font-sans text-sm leading-5"
             >
-              Select
+              ${escapeHtml(t('Select'))}
             </a>
           </div>
         `;
@@ -524,12 +572,12 @@
           if (!response.ok) {
             const msg =
               payload?.message ||
-              `Request failed (${response.status}). Please try again.`;
+              t('Request failed (%(status)s). Please try again.', { status: response.status });
             throw new Error(msg);
           }
 
           if (payload && payload.success === false) {
-            throw new Error(payload.message || 'Unable to load rooms.');
+            throw new Error(payload.message || t('Unable to load rooms.'));
           }
 
           const rooms = Array.isArray(payload?.data)
@@ -554,7 +602,7 @@
           showState('list');
         } catch (err) {
           els.errorMessage.textContent =
-            err instanceof Error ? err.message : 'An unexpected error occurred.';
+            err instanceof Error ? err.message : t('An unexpected error occurred.');
           showState('error');
         }
       }
@@ -568,7 +616,7 @@
 
         if (!validateSearchParams(searchParams)) {
           showState('params');
-          els.searchSummary.textContent = 'Search criteria incomplete.';
+          els.searchSummary.textContent = t('Search criteria incomplete.');
           return;
         }
 

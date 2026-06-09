@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Booking Cancellation Confirmed</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F3EEE7;font-family:Georgia,'Times New Roman',serif;color:#313131;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#F3EEE7;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #DBDBDB;">
+          <tr>
+            <td style="padding:40px 32px 24px;border-bottom:1px solid #DBDBDB;">
+              <p style="margin:0 0 8px;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#82847F;">Residences</p>
+              <h1 style="margin:0;font-size:28px;font-weight:400;line-height:1.3;color:#313131;">Booking Cancelled</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#55565B;">
+                Dear {{ booking.guest_name }},
+              </p>
+              <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#55565B;">
+                Your booking reservation has been successfully cancelled. We have processed the cancellation of your room reservation. Please review the details below.
+              </p>
+
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:32px;border:1px solid #DBDBDB;">
+                <tr>
+                  <td style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;">Reference</td>
+                  <td style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;">Guest</td>
+                </tr>
+                <tr>
+                  <td style="padding:16px;border-top:1px solid #DBDBDB;font-size:15px;">#{{ booking.id }}</td>
+                  <td style="padding:16px;border-top:1px solid #DBDBDB;font-size:15px;">{{ booking.guest_name }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;">Room</td>
+                  <td style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;">Original Stay</td>
+                </tr>
+                <tr>
+                  <td style="padding:16px;border-top:1px solid #DBDBDB;font-size:15px;">{{ room.room_number }} — {{ room.room_type }}</td>
+                  <td style="padding:16px;border-top:1px solid #DBDBDB;font-size:15px;">{{ booking.check_in }} → {{ booking.check_out }} ({{ booking.total_nights }} nights)</td>
+                </tr>
+                <tr>
+                  <td style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;">Cancellation Reason</td>
+                  <td style="padding:16px;background-color:#F3EEE7;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#82847F;">Status</td>
+                </tr>
+                <tr>
+                  <td style="padding:16px;border-top:1px solid #DBDBDB;font-size:15px;">{{ booking.cancel_reason or 'No reason provided' }}</td>
+                  <td style="padding:16px;border-top:1px solid #DBDBDB;font-size:15px;color:#55565B;">CANCELLED</td>
+                </tr>
+              </table>
+
+              <div style="margin-bottom:32px;padding:16px;background-color:#f9f9f9;border-left:4px solid #313131;">
+                <p style="margin:0 0 12px;font-size:13px;font-weight:600;color:#313131;">Need Help?</p>
+                <p style="margin:0 0 8px;font-size:13px;color:#55565B;">If you have any questions about this cancellation or need further assistance:</p>
+                <ul style="margin:12px 0;padding-left:20px;font-size:13px;color:#55565B;">
+                  <li style="margin-bottom:6px;">
+                    <strong>Call us:</strong> <a href="tel:0372863000" style="color:#313131;text-decoration:none;">0372863***</a>
+                  </li>
+                  <li>
+                    <strong>Email us:</strong> <a href="mailto:admin@gmail.com" style="color:#313131;text-decoration:none;">admin@gmail.com</a>
+                  </li>
+                </ul>
+              </div>
+
+              <p style="margin:0 0 16px;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#82847F;">Next Steps</p>
+              <p style="margin:0 0 24px;font-size:13px;line-height:1.6;color:#55565B;">
+                If you'd like to make a new reservation, you can visit our website and select your preferred dates. We look forward to hosting you in the future!
+              </p>
+
+              <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#313131;">Thank you for choosing Residences</p>
+              <p style="margin:0;font-size:12px;color:#82847F;">We appreciate your patronage and hope to welcome you again soon.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 32px;background-color:#F3EEE7;border-top:1px solid #DBDBDB;">
+              <p style="margin:0;font-size:12px;line-height:1.5;color:#82847F;">
+                This email contains important information about your reservation. Please keep it for your records.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -1,4 +1,5 @@
 fastapi
+python-multipart
 uvicorn[standard]
 sqlalchemy[asyncio]
 aiomysql
@@ -7,3 +8,5 @@ pydantic-settings
 python-jose[cryptography]
 passlib[bcrypt]
 structlog
+fastapi-babel
+Babel

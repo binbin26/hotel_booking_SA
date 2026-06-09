@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Residences — Your Reservation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vietnamese text rendering optimization CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', path='global.css') }}" />
+  <!-- Vietnamese text Unicode normalization JavaScript -->
+  <script src="{{ url_for('static', path='vietnamese-text-normalizer.js') }}" defer></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            charcoal: '#313131',
+            cream: '#F3EEE7',
+            'mid-gray': '#82847F',
+            'light-border': '#DBDBDB',
+            'dark-gray': '#55565B',
+          },
+          fontFamily: {
+            display: ['Georgia', 'serif'],
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>* { border-radius: 0 !important; }</style>
+</head>
+<body class="bg-white text-charcoal font-sans antialiased min-h-screen flex flex-col">
+  <header class="bg-cream border-b border-light-border">
+    <div class="max-w-4xl mx-auto px-6 py-10">
+      <p class="text-[10px] uppercase tracking-[0.15em] text-mid-gray mb-2">Residences</p>
+      <h1 class="font-display text-4xl font-normal">Your Reservation</h1>
+      <p class="text-mid-gray mt-2 text-sm">Reference #{{ booking.id }}</p>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-4xl mx-auto w-full px-6 py-12">
+    <div class="grid md:grid-cols-3 gap-8">
+      <section class="md:col-span-2 border border-light-border p-8">
+        <h2 class="text-[10px] uppercase tracking-[0.15em] text-mid-gray mb-6">Invoice Summary</h2>
+        <dl class="space-y-4 text-sm">
+          <div class="flex justify-between border-b border-light-border pb-3">
+            <dt class="text-mid-gray">Guest</dt>
+            <dd>{{ booking.guest_name }}</dd>
+          </div>
+          <div class="flex justify-between border-b border-light-border pb-3">
+            <dt class="text-mid-gray">Email</dt>
+            <dd>{{ booking.guest_email }}</dd>
+          </div>
+          {% if booking.guest_phone %}
+          <div class="flex justify-between border-b border-light-border pb-3">
+            <dt class="text-mid-gray">Phone</dt>
+            <dd>{{ booking.guest_phone }}</dd>
+          </div>
+          {% endif %}
+          <div class="flex justify-between border-b border-light-border pb-3">
+            <dt class="text-mid-gray">Room</dt>
+            <dd>{{ room.room_number }} — {{ room.room_type }}</dd>
+          </div>
+          <div class="flex justify-between border-b border-light-border pb-3">
+            <dt class="text-mid-gray">Check-in</dt>
+            <dd>{{ booking.check_in }}</dd>
+          </div>
+          <div class="flex justify-between border-b border-light-border pb-3">
+            <dt class="text-mid-gray">Check-out</dt>
+            <dd>{{ booking.check_out }}</dd>
+          </div>
+          <div class="flex justify-between border-b border-light-border pb-3">
+            <dt class="text-mid-gray">Nights</dt>
+            <dd>{{ booking.total_nights }}</dd>
+          </div>
+          <div class="flex justify-between border-b border-light-border pb-3">
+            <dt class="text-mid-gray">Status</dt>
+            <dd class="uppercase tracking-wider text-xs">{{ booking.status.value }}</dd>
+          </div>
+          {% if payment %}
+          <div class="flex justify-between border-b border-light-border pb-3">
+            <dt class="text-mid-gray">Payment</dt>
+            <dd>{{ payment.payment_method }} — Paid</dd>
+          </div>
+          {% endif %}
+          <div class="flex justify-between pt-2">
+            <dt class="font-medium">Total</dt>
+            <dd class="text-lg font-display">{{ booking.total_price }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <aside class="space-y-4">
+        <p class="text-[10px] uppercase tracking-[0.15em] text-mid-gray">Self-Service</p>
+        {% if booking.status.value != 'CANCELLED' %}
+        <a href="{{ links.edit_url }}" class="block w-full py-3 px-4 border border-charcoal text-center text-xs uppercase tracking-widest hover:bg-charcoal hover:text-cream transition-colors">
+          Edit Booking
+        </a>
+        <a href="{{ links.cancel_url }}" class="block w-full py-3 px-4 border border-light-border text-center text-xs uppercase tracking-widest text-dark-gray hover:border-charcoal transition-colors">
+          Cancel Booking
+        </a>
+        {% else %}
+        <p class="text-sm text-mid-gray border border-light-border p-4">This reservation has been cancelled.</p>
+        {% endif %}
+      </aside>
+    </div>
+  </main>
+
+  <footer class="border-t border-light-border text-center text-xs text-mid-gray py-8">
+    &copy; {{ current_year }} Residences. All rights reserved.
+  </footer>
+</body>
+</html>
