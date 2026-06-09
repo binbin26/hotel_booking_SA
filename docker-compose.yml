@@ -1,0 +1,7 @@
+# docker-compose.yml (nếu có)
+services:
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "1025:1025" # Cổng SMTP
+      - "8025:8025" # Cổng Web UI để xem Mail

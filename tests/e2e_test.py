@@ -185,9 +185,11 @@ def test_integration():
         print("\n==============================")
         print("INTEGRATION TEST COMPLETED")
         print("==============================")
-
+    
         browser.close()
+        
 
 
 if __name__ == "__main__":
     test_integration()
+

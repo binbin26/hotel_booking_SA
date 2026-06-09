@@ -1,0 +1,457 @@
+# Vietnamese translations for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-06-09 18:17+0700\n"
+"PO-Revision-Date: 2026-06-09 18:20+0700\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: vi\n"
+"Language-Team: vi <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: app/core/i18n.py:130
+msgid "Residence"
+msgstr "Căn hộ"
+
+#: app/core/i18n.py:131
+msgid "1 guest"
+msgstr "1 khách"
+
+#: app/core/i18n.py:132
+#, python-format
+msgid "%(count)s guests"
+msgstr "%(count)s khách"
+
+#: app/core/i18n.py:133
+msgid "night"
+msgstr "đêm"
+
+#: app/core/i18n.py:134
+msgid "nights"
+msgstr "đêm"
+
+#: app/core/i18n.py:135
+#, python-format
+msgid "Up to %(capacity)s guests"
+msgstr "Tối đa %(capacity)s khách"
+
+#: app/core/i18n.py:136
+msgid "Available"
+msgstr "Còn phòng"
+
+#: app/core/i18n.py:137
+msgid "Pending"
+msgstr "Đang chờ"
+
+#: app/core/i18n.py:138
+msgid "Occupied"
+msgstr "Đã có khách"
+
+#: app/core/i18n.py:139
+msgid "Maintenance"
+msgstr "Bảo trì"
+
+#: app/core/i18n.py:140
+msgid "/ night"
+msgstr "/ đêm"
+
+#: app/core/i18n.py:141
+#, python-format
+msgid "Estimated total %(amount)s"
+msgstr "Tổng ước tính %(amount)s"
+
+#: app/core/i18n.py:142
+msgid "Select"
+msgstr "Chọn"
+
+#: app/core/i18n.py:143
+#, python-format
+msgid "View larger image of %(title)s"
+msgstr "Xem ảnh lớn của %(title)s"
+
+#: app/core/i18n.py:144
+msgid "Search criteria incomplete."
+msgstr "Tiêu chí tìm kiếm chưa đầy đủ."
+
+#: app/core/i18n.py:145
+#, python-format
+msgid "Request failed (%(status)s). Please try again."
+msgstr "Yêu cầu thất bại (%(status)s). Vui lòng thử lại."
+
+#: app/core/i18n.py:146
+msgid "Unable to load rooms."
+msgstr "Không thể tải danh sách phòng."
+
+#: app/core/i18n.py:147
+msgid "An unexpected error occurred."
+msgstr "Đã xảy ra lỗi không mong muốn."
+
+#: app/core/i18n.py:148 templates/index.html:277 templates/index.html:293
+msgid "Select date"
+msgstr "Chọn ngày"
+
+#: app/core/i18n.py:149
+msgid "Please select a check-in date."
+msgstr "Vui lòng chọn ngày nhận phòng."
+
+#: app/core/i18n.py:150
+msgid "Please select a check-out date."
+msgstr "Vui lòng chọn ngày trả phòng."
+
+#: app/core/i18n.py:151
+msgid "Check-in cannot be in the past."
+msgstr "Ngày nhận phòng không thể ở quá khứ."
+
+#: app/core/i18n.py:152
+msgid "Check-out must be after check-in."
+msgstr "Ngày trả phòng phải sau ngày nhận phòng."
+
+#: app/core/i18n.py:153
+msgid "Stays longer than 30 nights require a direct inquiry."
+msgstr "Lưu trú trên 30 đêm cần liên hệ trực tiếp."
+
+#: app/core/i18n.py:154
+msgid "Select your check-in date."
+msgstr "Chọn ngày nhận phòng của bạn."
+
+#: app/core/i18n.py:155
+msgid "Select your check-out date."
+msgstr "Chọn ngày trả phòng của bạn."
+
+#: app/core/i18n.py:156
+msgid "Please select the number of guests."
+msgstr "Vui lòng chọn số lượng khách."
+
+#: app/core/i18n.py:157
+msgid "Culture & History"
+msgstr "Văn hóa & Lịch sử"
+
+#: app/core/i18n.py:158
+msgid "Gastronomy"
+msgstr "Ẩm thực"
+
+#: app/core/i18n.py:159
+#, python-format
+msgid "%(distance)s km away"
+msgstr "Cách %(distance)s km"
+
+#: templates/index.html:6
+msgid "Residences — Hotel Booking"
+msgstr "Residences — Đặt phòng khách sạn"
+
+#: templates/index.html:199 templates/index.html:456 templates/rooms.html:144
+#: templates/rooms.html:241
+msgid "Residences"
+msgstr "Residences"
+
+#: templates/index.html:203 templates/index.html:341 templates/index.html:494
+msgid "Destinations"
+msgstr "Điểm đến"
+
+#: templates/index.html:204 templates/index.html:360 templates/index.html:495
+msgid "Experiences"
+msgstr "Trải nghiệm"
+
+#: templates/index.html:205 templates/index.html:496
+msgid "About"
+msgstr "Giới thiệu"
+
+#: templates/index.html:213
+msgid "Open menu"
+msgstr "Mở menu"
+
+#: templates/index.html:222 templates/index.html:498
+msgid "Reserve"
+msgstr "Đặt phòng"
+
+#: templates/index.html:234
+msgid "Serene resort pool at dusk"
+msgstr "Hồ bơi resort thanh bình lúc hoàng hôn"
+
+#: templates/index.html:245
+msgid "A sanctuary of calm"
+msgstr "Nơi tĩnh lặng"
+
+#: templates/index.html:248
+msgid "Where stillness becomes the journey"
+msgstr "Nơi sự tĩnh lặng trở thành hành trình"
+
+#: templates/index.html:251
+msgid ""
+"Discover refined residences immersed in nature. Begin your stay with "
+"dates that honor unhurried time."
+msgstr ""
+"Khám phá những căn hộ tinh tế giữa thiên nhiên. Bắt đầu kỳ nghỉ với "
+"những ngày dành cho thời gian không vội vã."
+
+#: templates/index.html:260 templates/index.html:323
+msgid "Search availability"
+msgstr "Tìm phòng trống"
+
+#: templates/index.html:263
+msgid "Plan your stay"
+msgstr "Lên kế hoạch lưu trú"
+
+#: templates/index.html:269 templates/index.html:522
+msgid "Check-in"
+msgstr "Nhận phòng"
+
+#: templates/index.html:285 templates/index.html:530
+msgid "Check-out"
+msgstr "Trả phòng"
+
+#: templates/index.html:301 templates/index.html:310
+msgid "Guests"
+msgstr "Khách"
+
+#: templates/index.html:308
+msgid "Select guests"
+msgstr "Chọn số khách"
+
+#: templates/index.html:310
+msgid "Guest"
+msgstr "Khách"
+
+#: templates/index.html:326
+msgid "Searching…"
+msgstr "Đang tìm…"
+
+#: templates/index.html:340
+msgid "Nearby"
+msgstr "Gần đây"
+
+#: templates/index.html:343
+msgid ""
+"From historic landmarks to vibrant districts, discover the soul of Ho Chi"
+" Minh City—curated moments within reach of your residence at 395/18 Diên "
+"Hồng."
+msgstr ""
+"Từ những di tích lịch sử đến các khu phố sôi động, khám phá linh hồn "
+"Sài Gòn—những khoảnh khắc được chọn lọc trong tầm tay từ căn hộ tại "
+"395/18 Diên Hồng."
+
+#: templates/index.html:359
+msgid "Curated for you"
+msgstr "Được chọn riêng cho bạn"
+
+#: templates/index.html:362
+msgid ""
+"Wellness rituals, private dining, and cultural immersions unfold at an "
+"unhurried pace—crafted for those who value presence over spectacle."
+msgstr ""
+"Nghi thức chăm sóc sức khỏe, ẩm thực riêng tư và trải nghiệm văn hóa diễn "
+"ra theo nhịp không vội—dành cho những ai trân trọng sự hiện diện hơn "
+"phô trương."
+
+#: templates/index.html:371
+msgid "Serene spa treatment room with warm lighting"
+msgstr "Phòng spa thanh bình với ánh sáng ấm"
+
+#: templates/index.html:378
+msgid "Wellness & Spa"
+msgstr "Chăm sóc sức khỏe & Spa"
+
+#: templates/index.html:380
+msgid ""
+"Holistic treatments inspired by Vietnamese botanical traditions—private "
+"suites, thermal rituals, and guided meditation at dawn."
+msgstr ""
+"Liệu pháp toàn diện lấy cảm hứng từ thảo dược Việt Nam—phòng riêng, "
+"nghi thức nhiệt và thiền định có hướng dẫn lúc bình minh."
+
+#: templates/index.html:388
+msgid "Elegant fine dining table setting"
+msgstr "Bàn ăn fine dining thanh lịch"
+
+#: templates/index.html:395
+msgid "Fine Dining"
+msgstr "Ẩm thực cao cấp"
+
+#: templates/index.html:397
+msgid ""
+"Seasonal tasting menus pairing Saigon street-market ingredients with "
+"contemporary technique—served in an intimate courtyard setting."
+msgstr ""
+"Thực đơn degustation theo mùa kết hợp nguyên liệu chợ đường phố Sài Gòn "
+"với kỹ thuật hiện đại—phục vụ trong không gian sân trong thân mật."
+
+#: templates/index.html:405
+msgid "Traditional Vietnamese architecture and lanterns"
+msgstr "Kiến trúc và đèn lồng truyền thống Việt Nam"
+
+#: templates/index.html:412
+msgid "Cultural Immersions"
+msgstr "Trải nghiệm văn hóa"
+
+#: templates/index.html:414
+msgid ""
+"Private gallery visits, artisan workshops, and guided walks through "
+"historic districts—each journey tailored to your pace and curiosity."
+msgstr ""
+"Tham quan phòng tranh riêng, workshop thủ công và đi bộ có hướng dẫn qua "
+"các khu phố lịch sử—mỗi hành trình được thiết kế theo nhịp độ và sự tò "
+"mò của bạn."
+
+#: templates/index.html:428
+msgid "Minimalist luxury hotel interior with natural light"
+msgstr "Nội thất khách sạn sang trọng tối giản với ánh sáng tự nhiên"
+
+#: templates/index.html:436
+msgid "Our philosophy"
+msgstr "Triết lý của chúng tôi"
+
+#: templates/index.html:437
+msgid "Where tranquility meets design"
+msgstr "Nơi sự tĩnh lặng gặp gỡ thiết kế"
+
+#: templates/index.html:439
+msgid ""
+"Residences was conceived as a sanctuary within the city—a place where "
+"architecture breathes, light is measured, and every surface invites "
+"stillness. Our spaces honor Vietnamese craft while embracing a global "
+"language of restraint and warmth."
+msgstr ""
+"Residences được hình thành như một nơi trú ẩn giữa thành phố—nơi kiến "
+"trúc thở, ánh sáng được cân chỉnh và mọi bề mặt mời gọi sự tĩnh lặng. "
+"Không gian của chúng tôi tôn vinh nghề thủ công Việt Nam đồng thời "
+"đón nhận ngôn ngữ toàn cầu của sự giản dị và ấm áp."
+
+#: templates/index.html:442
+msgid ""
+"We believe true luxury is the absence of excess: unhurried mornings, "
+"intuitive service that anticipates without intruding, and rooms that feel"
+" like private retreats rather than transactions."
+msgstr ""
+"Chúng tôi tin rằng sang trọng thực sự là không thừa thãi: buổi sáng "
+"không vội, dịch vụ tinh tế đoán trước mà không làm phiền, và những căn "
+"phòng như nơi nghỉ riêng tư chứ không chỉ là giao dịch."
+
+#: templates/index.html:445
+msgid ""
+"Whether you arrive for a weekend of discovery or an extended stay, our "
+"team crafts each detail to your rhythm—so you may simply be present."
+msgstr ""
+"Dù bạn đến trong một cuối tuần khám phá hay lưu trú dài ngày, đội ngũ "
+"chúng tôi điều chỉnh từng chi tiết theo nhịp sống của bạn—để bạn chỉ "
+"cần hiện diện."
+
+#: templates/index.html:462 templates/rooms.html:247
+msgid "Contact"
+msgstr "Liên hệ"
+
+#: templates/index.html:469 templates/rooms.html:254
+msgid "Information"
+msgstr "Thông tin"
+
+#: templates/index.html:471 templates/rooms.html:256
+msgid "Terms & Conditions"
+msgstr "Điều khoản & Điều kiện"
+
+#: templates/index.html:472 templates/rooms.html:257
+msgid "Privacy Policy"
+msgstr "Chính sách bảo mật"
+
+#: templates/index.html:473 templates/rooms.html:258
+msgid "FAQs"
+msgstr "Câu hỏi thường gặp"
+
+#: templates/index.html:477 templates/rooms.html:262
+msgid "All rights reserved."
+msgstr "Bảo lưu mọi quyền."
+
+#: templates/index.html:493
+msgid "Close menu"
+msgstr "Đóng menu"
+
+#: templates/index.html:515
+msgid "Select dates"
+msgstr "Chọn ngày"
+
+#: templates/index.html:516
+msgid "Close calendar"
+msgstr "Đóng lịch"
+
+#: templates/index.html:518
+msgid "Choose your check-in and check-out dates."
+msgstr "Chọn ngày nhận phòng và ngày trả phòng."
+
+#: templates/index.html:547
+msgid "Clear"
+msgstr "Xóa"
+
+#: templates/index.html:554
+msgid "Apply dates"
+msgstr "Áp dụng ngày"
+
+#: templates/rooms.html:6
+msgid "Residences — Available Rooms"
+msgstr "Residences — Phòng còn trống"
+
+#: templates/rooms.html:149 templates/rooms.html:214 templates/rooms.html:228
+msgid "Modify search"
+msgstr "Thay đổi tìm kiếm"
+
+#: templates/rooms.html:156
+msgid "Search criteria"
+msgstr "Tiêu chí tìm kiếm"
+
+#: templates/rooms.html:158
+msgid "Your journey"
+msgstr "Hành trình của bạn"
+
+#: templates/rooms.html:159
+msgid "Available residences"
+msgstr "Căn hộ còn trống"
+
+#: templates/rooms.html:171
+msgid ""
+"Please provide check-in, check-out, and guest count to search for "
+"available rooms."
+msgstr ""
+"Vui lòng nhập ngày nhận phòng, ngày trả phòng và số khách để tìm phòng "
+"còn trống."
+
+#: templates/rooms.html:177
+msgid "Return home"
+msgstr "Về trang chủ"
+
+#: templates/rooms.html:183
+msgid "Loading available rooms"
+msgstr "Đang tải danh sách phòng"
+
+#: templates/rooms.html:201
+msgid "Unable to load residences"
+msgstr "Không thể tải danh sách căn hộ"
+
+#: templates/rooms.html:208
+msgid "Try again"
+msgstr "Thử lại"
+
+#: templates/rooms.html:220
+msgid "No residences available"
+msgstr "Không có căn hộ trống"
+
+#: templates/rooms.html:222
+msgid ""
+"We could not find availability for your selected dates. Please adjust "
+"your stay or contact us for assistance."
+msgstr ""
+"Chúng tôi không tìm thấy phòng trống trong khoảng ngày bạn chọn. Vui lòng "
+"điều chỉnh lịch lưu trú hoặc liên hệ để được hỗ trợ."
+
+#: templates/rooms.html:276
+msgid "Room image gallery"
+msgstr "Thư viện ảnh phòng"
+
+#: templates/rooms.html:283
+msgid "Close gallery"
+msgstr "Đóng thư viện ảnh"
